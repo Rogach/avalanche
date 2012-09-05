@@ -4,7 +4,7 @@ import org.rogach.Prelude._
 import org.rogach.scallop._
 
 class Opts(args: Seq[String]) extends ScallopConf(args) {
-  version("Avalanche, %s b%s (%3$td.%3$tm.%3$tY %3$R). Built with Scala %s" format (
+  version("Avalanche, %s b%s (%3$td.%3$tm.%3$tY). Built with Scala %4$s" format (
     BuildInfo.version, 
     BuildInfo.buildinfoBuildnumber, 
     new java.util.Date(BuildInfo.buildTime),
