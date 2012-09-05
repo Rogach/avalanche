@@ -1,7 +1,7 @@
 AVALANCHE
 =========
 
-A simple, file-concerned build system. It uses .scala file as general configuration and code you will need to carry out your tasks.
+A simple, file-concerned build system. It uses script .scala file as configuration.
 
 Avalanche gives you convenient way to specify your task tree using full power of Scala language. 
 Unlike other buildsystems (e.g. SBT) it allows single task to be run several times per build (with different params), allows dependencies to all tasks depend on input parameters,
@@ -39,25 +39,4 @@ Usage
 =====
 
     av [option]... [tasks]...
-
-Configuration
-=============
-## Command line options
-
-     av [OPTION]... [TASK]...
-   
-     -b, --build-file  <arg>   use the given file instead of default build.av or 
-                               build.av.xml 
-     -D, --dry-run             only list the tasks in order of their execution, do 
-                               not build anything 
-     -f, --force  <tasks>...   force several tasks to re-build (with parameters) 
-     -F, --force-all           force all depended tasks to be rebuilded 
-     -q, --quiet               supress avalanche output 
-     -s, --silent              supress all output, including output from scripts 
-                               (stderr from scripts is still printed) 
-     -S, --supress  <arg>...   tasks to be supressed 
-     -t, --tasks  <arg>...     tasks to run 
-     -v, --verbose             print more information 
-   
-    trailing arguments:
-     tasks to run (required)   tasks to run 
+    av --help
