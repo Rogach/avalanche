@@ -19,7 +19,19 @@ task("default",
 
 You will be able to run this example with `av default[aoeu.txt]` command.
 
-For convenience, Avalanche also has utilities to test the need to rerun using the modification status of input and output files.
+For convenience, Avalanche also has utilities to test the need to rerun using the modification status of input and output files:
+
+```scala
+task("default",
+  inputs = files("%s.txt"), // %s will be replaced with the first task parameter
+  outputs = files("%s.txt.out"),
+  body = { args =>
+    import sys.process._
+    Seq("cp", "%s.txt" format args.head, "%s.txt.out" format args.head) !
+  })
+```
+
+In this example, if you execute `av default[a]`, Avalanche would check modification times of `a.txt` and `a.txt.out`, and if `a.txt` is newer or `a.txt.out` does not exist, it would run the task.
 
 Requirements
 ============
