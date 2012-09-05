@@ -17,6 +17,13 @@ object Avalanche {
       if (!(new File(file)).exists) throw new BuildFileNotFound(file)
       BuildCompiler.compile(file)
 
+      // print task list
+      if (opts.printTasks()) {
+        println("Tasks:")
+        tasks.foreach(t => println("  " + t.name))
+        sys.exit(1)
+      }
+
       // create a "root" task, that would trigger the build
       val rootTask = new Task(
         name = "-avalanche-root-task", 

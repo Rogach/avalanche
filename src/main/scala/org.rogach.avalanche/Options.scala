@@ -20,6 +20,7 @@ class Opts(args: Seq[String]) extends ScallopConf(args) {
   val forcedTasks = opt[List[String]]("force", descr = "force several tasks to re-build (with parameters)", argName = "tasks")
   val allForced = opt[Boolean]("force-all", short = 'F', descr = "force all depended tasks to be rebuilded")
   val dryRun = opt[Boolean]("dry-run", short = 'D', descr = "only list the tasks in order of their execution, do not build anything")
+  val printTasks = opt[Boolean]("print-tasks", short = 'P', descr = "only print list of tasks and exit")
   private val quiet = opt[Boolean]("quiet", descr = "supress avalanche output")
   private val silent = opt[Boolean]("silent", descr = "supress all output, including output from scripts (stderr from scripts is still printed)")
   private val verbose = opt[Boolean]("verbose", descr = "print more information")
