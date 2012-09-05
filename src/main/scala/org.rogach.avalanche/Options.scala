@@ -4,7 +4,11 @@ import org.rogach.Prelude._
 import org.rogach.scallop._
 
 class Opts(args: Seq[String]) extends ScallopConf(args) {
-  version("Avalanche, %s b%s. Built with Scala %s and sbt %s" format (BuildInfo.version, BuildInfo.buildinfoBuildnumber, BuildInfo.scalaVersion, BuildInfo.sbtVersion))
+  version("Avalanche, %s b%s (%3$td.%3$tm.%3$tY %3$R). Built with Scala %s" format (
+    BuildInfo.version, 
+    BuildInfo.buildinfoBuildnumber, 
+    new java.util.Date(BuildInfo.buildTime),
+    BuildInfo.scalaVersion))
   banner("""Small and simple make utility clone, that uses plain Scala files for build definitions.
            |Usage:
            |  av [OPTION]... [TASK]...

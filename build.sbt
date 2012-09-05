@@ -34,6 +34,8 @@ buildInfoSettings
 
 sourceGenerators in Compile <+= buildInfo
 
-buildInfoKeys := Seq[Scoped](name, version, scalaVersion, sbtVersion, buildInfoBuildNumber)
+buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, buildInfoBuildNumber)
+
+buildInfoKeys ++= Seq[BuildInfoKey]("buildTime" -> System.currentTimeMillis)
 
 buildInfoPackage := "org.rogach.avalanche"

@@ -7,4 +7,4 @@ addSbtPlugin("cc.spray" % "sbt-revolver" % "0.6.1")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.1")
 
-addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.1.2")
+addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.2.0")
