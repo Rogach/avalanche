@@ -10,7 +10,7 @@ object ErrorHandler extends PartialFunction[Throwable,Unit] {
     case TaskNotFound(name) =>
       error("Task not found: '%s'" format name)
     case TaskFailed(name, args, e) =>
-      error("Task failed: '%s[%s]" format (name, args.mkString(",")))
+      error("Task failed: %s[%s]" format (name, args.mkString(",")))
       if (!Avalanche.opts.isSilent)
         e.printStackTrace
     case TaskDepParseException(s) =>
