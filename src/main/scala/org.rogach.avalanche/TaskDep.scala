@@ -23,8 +23,7 @@ case class TaskDep(task: Task, args: List[String]) {
           throw new TaskFailed(task.name, args, e)
         }
         val endTime = System.currentTimeMillis
-        success("Total time: %d s, completed on " + Avalanche.TIME_FORMAT format ((endTime - startTime)/1000, new java.util.Date))      
-      }
+        success("Total time: %d s, completed on " + Avalanche.TIME_FORMAT format ((endTime - startTime)/1000, new java.util.Date))        }
     } else {
       // everything's fine, we can rest
       verbose("Not rebuilding")

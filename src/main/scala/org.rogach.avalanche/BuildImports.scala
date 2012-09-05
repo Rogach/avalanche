@@ -12,7 +12,14 @@ object BuildImports {
   def task(name: String, inputs: List[String] => Seq[File], outputs: List[String] => Seq[File], deps: List[String] => Seq[TaskDep] = _ => Nil, body: List[String] => Unit): Task =
     task(name,
       rerun = { args =>
-        val inputsModify = inputs(args).map(f => if (f.exists) f.lastModified else throw new InputFileNotFound(f.toString, name, args))
+        val inputsModify = inputs(args).map(f => 
+          if (f.exists) Some(f.lastModified) 
+          else { 
+            if (!Avalanche.opts.dryRun())
+              throw new InputFileNotFound(f.toString, name, args)
+            None
+          }
+        ).flatten
         val inputsModifyTime = if (inputsModify.isEmpty) System.currentTimeMillis else inputsModify.max
         
         val outputsModify = outputs(args).map(_.lastModified)
