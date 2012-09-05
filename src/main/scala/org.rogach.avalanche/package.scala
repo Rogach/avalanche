@@ -11,15 +11,17 @@ package object avalanche {
     if (!Avalanche.opts.isQuiet) {
       // print prefix
       print(
-        "[\033[%smavalanche\033[0m] " format (
-          level match {
-            case ERROR => "31"
-            case SUCCESS => "32"
-            case WARN => "33"
-            case _ => "0"
-          }
-        )
-      )
+        if (System.console() == null) "[avalanche]"
+        else {
+         "[\033[%smavalanche\033[0m] " format (
+            level match {
+              case ERROR => "31"
+              case SUCCESS => "32"
+              case WARN => "33"
+              case _ => "0"
+            }
+          )
+        })
       println(mess)
     }
   }
