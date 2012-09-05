@@ -15,6 +15,8 @@ object ErrorHandler extends PartialFunction[Throwable,Unit] {
         e.printStackTrace
     case TaskDepParseException(s) =>
       error("Failed to parse task dep: '%s'" format s)
+    case InputFileNotFound(fn, task, args) =>
+      error("Failed to find input file '%s' for task %s[%s]" format (fn, task, args.mkString(",")))
     case a => 
       error("Internal exception, please file bug report!")
       a.printStackTrace
