@@ -98,4 +98,4 @@ class Compiler {
   */
 class CompilationFailedException(val programme: String,
                                   val messages: Iterable[(Int, String)])
-   extends Exception("\n" + messages.map(m => "line %d: %s" format (m._1 - 4, m._2)).mkString("\n"))
+   extends Exception("\n" + messages.map(m => "line %d: %s" format (m._1 - 3, m._2)).mkString("\n"))
