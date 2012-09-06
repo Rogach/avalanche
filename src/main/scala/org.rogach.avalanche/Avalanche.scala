@@ -18,8 +18,8 @@ object Avalanche {
       BuildCompiler.compile(file)
 
       // print task list
-      if (opts.printTasks()) {
-        println("Tasks:")
+      if (opts.listTasks()) {
+        println("Available tasks:")
         tasks.foreach(t => println("  " + t.name))
         sys.exit(1)
       }
