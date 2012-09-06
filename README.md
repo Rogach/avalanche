@@ -5,7 +5,7 @@ A simple, file-concerned build system. It uses script .scala file as configurati
 
 Avalanche gives you convenient way to specify your task tree using full power of Scala language. 
 Unlike other buildsystems (e.g. SBT) it allows single task to be run several times per build (with different params), allows dependencies to all tasks depend on input parameters,
-and it is completely flexible - you have fine control over execution of every task. For example, the following is a simple build definition for transforming of some file:
+and it is completely flexible - you have fine control over execution of every task. For example, the following is a simple build definition for transforming of some files:
 
 ```scala
 import java.io.File
@@ -33,6 +33,8 @@ task("default",
 
 In this example, if you execute `av default[a]`, Avalanche would check modification times of `a.txt` and `a.txt.out`, and if `a.txt` is newer or `a.txt.out` does not exist, it would run the task.
 
+For examles, you can look at `samples/` directory here at github repository.
+
 Requirements
 ============
 
@@ -41,7 +43,15 @@ Requirements
 Installation
 ============
 
-You can download avalanche-{version}.jar from github site - it is an executable jar and does not require any other files.
+Right now, there is no packaged jar for the project - but you can easily build it yourself with the following commands:
+
+```bash
+git clone git@github.com:Rogach/avalanche.git
+cd avalanche
+sbt assembly
+```
+
+Now the needed jar is located in `target/` directory - it is an executable jar and does not require any other files.
 
 For convenience, you can use the following script to launch avalanche (name it "av", make it executable, and place somewhere on your PATH):
 
