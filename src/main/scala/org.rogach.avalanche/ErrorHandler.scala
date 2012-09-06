@@ -17,6 +17,8 @@ object ErrorHandler extends PartialFunction[Throwable,Unit] {
       error("Failed to parse task dep: '%s'" format s)
     case InputFileNotFound(fn, task, args) =>
       error("Failed to find input file '%s' for task %s[%s]" format (fn, task, args.mkString(",")))
+    case TaskNotCompleted(task, args) =>
+      error("Failed to complete the task '%s[%s]' - after running the task, rerun is still needed." format (task, args))
     case a => 
       error("Internal exception, please file bug report!")
       a.printStackTrace

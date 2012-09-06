@@ -22,6 +22,10 @@ case class TaskDep(task: Task, args: List[String]) {
           error("Exception from task")
           throw new TaskFailed(task.name, args, e)
         }
+
+        // check that the task successfully ended
+        if (getReRun) throw new TaskNotCompleted(task.name, args)
+
         val endTime = System.currentTimeMillis
         success("Total time: %d s, completed on " + Avalanche.TIME_FORMAT format ((endTime - startTime)/1000, new java.util.Date))        }
     } else {
