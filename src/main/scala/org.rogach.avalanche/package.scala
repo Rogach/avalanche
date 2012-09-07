@@ -11,7 +11,7 @@ package object avalanche {
     if (!Avalanche.opts.isQuiet) {
       // print prefix
       print(
-        if (System.console() == null) "[avalanche]"
+        if (System.console() == null) "[avalanche] "
         else {
          "[\033[%smavalanche\033[0m] " format (
             level match {
