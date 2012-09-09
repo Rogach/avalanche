@@ -33,7 +33,11 @@ object BuildImports {
   def onInit(fn: => Unit) = {
     Avalanche.init += (() => fn)
   }
-    
+  def createDirs(dirs: String*) =
+    onInit {
+      dirs.map(new File(_)).foreach(_.mkdirs)
+    }
+
   def files(names: String*)(args: List[String]) = names.map(_.format(args:_*)).map(new File(_))
 
   implicit def task2taskDep(t: Task) = TaskDep(t, Nil)
