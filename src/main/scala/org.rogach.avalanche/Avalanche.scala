@@ -8,6 +8,7 @@ object Avalanche {
   var opts: Opts = null
 
   val tasks = collection.mutable.ListBuffer[Task]()
+  val init = collection.mutable.ListBuffer[() => Unit]()
   
   def main(args:Array[String]) {
     val startTime = System.currentTimeMillis
@@ -23,6 +24,8 @@ object Avalanche {
         tasks.foreach(t => println("  " + t.name))
         sys.exit(1)
       }
+      
+      init.foreach(_())
 
       // create a "root" task, that would trigger the build
       val rootTask = new Task(

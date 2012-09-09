@@ -1,3 +1,6 @@
+onInit {
+  println("init")
+}
 val default = task("default",
   rerun = _ => true,
   deps = _ => List(second("a"), third),

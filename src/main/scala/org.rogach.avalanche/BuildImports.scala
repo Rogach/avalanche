@@ -30,6 +30,10 @@ object BuildImports {
       body = body
     )
     
+  def onInit(fn: => Unit) = {
+    Avalanche.init += (() => fn)
+  }
+    
   def files(names: String*)(args: List[String]) = names.map(_.format(args:_*)).map(new File(_))
 
   implicit def task2taskDep(t: Task) = TaskDep(t, Nil)
