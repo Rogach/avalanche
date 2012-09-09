@@ -1,6 +1,7 @@
 package org.rogach.avalanche
 
 import java.io.File
+import sys.process._
 
 object BuildImports {
   def task(name: String, rerun: List[String] => Boolean, deps: List[String] => Seq[TaskDep], body: List[String] => Unit): Task = {
@@ -30,6 +31,8 @@ object BuildImports {
       body = body
     )
     
+  def files(names: String*)(args: List[String]) = names.map(_.format(args:_*)).map(new File(_))
+
   def onInit(fn: => Unit) = {
     Avalanche.init += (() => fn)
   }
@@ -38,8 +41,14 @@ object BuildImports {
       dirs.map(new File(_)).foreach(_.mkdirs)
     }
 
-  def files(names: String*)(args: List[String]) = names.map(_.format(args:_*)).map(new File(_))
 
+  def f(s: String): File = new File(s)
+
+  def exec(f: String, env: Map[String,String]) = {
+    val exitCode = Process(f, None, env.toSeq:_*) !;
+    if (exitCode != 0) sys.error("Non-zero exit code from script: '%s'" format f)
+  }  
+  
   implicit def task2taskDep(t: Task) = TaskDep(t, Nil)
   implicit def taskDep2taskDepSeq(t: TaskDep) = Seq(t)
   implicit def task2taskDepSeq(t: Task) = Seq(TaskDep(t, Nil))
