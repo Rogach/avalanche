@@ -18,7 +18,7 @@ object BuildImports {
           else { 
             if (!Avalanche.opts.dryRun())
               throw new InputFileNotFound(f.toString, name, args)
-            None
+            Some(System.currentTimeMillis)
           }
         ).flatten
         val inputsModifyTime = if (inputsModify.isEmpty) System.currentTimeMillis else inputsModify.max
