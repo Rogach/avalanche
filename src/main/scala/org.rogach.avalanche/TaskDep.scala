@@ -19,7 +19,7 @@ case class TaskDep(task: Task, args: List[String]) {
         try {
           task.body(args)
         } catch { case e =>
-          error("Exception from task")
+          error("Exception from task (%s)" format e.getMessage)
           throw new TaskFailed(task.name, args, e)
         }
 
