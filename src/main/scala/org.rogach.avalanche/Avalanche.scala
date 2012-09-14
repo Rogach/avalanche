@@ -2,6 +2,7 @@ package org.rogach.avalanche
 
 import java.io.File
 import avalanche._
+import org.rogach.Prelude._
 
 object Avalanche {
   val TIME_FORMAT = "%2$tb %2$te, %2$tT"
@@ -12,8 +13,16 @@ object Avalanche {
   
   def main(args:Array[String]) {
     val startTime = System.currentTimeMillis
+    val lock = new File(".av.lock")
     try {
       opts = new Opts(args)
+
+      if (lock.exists && !opts.ignoreLock()) {
+        error("Detected other build process with pid '%s' running, exiting. Use --ignore-lock to force running." format io.Source.fromFile(lock).getLines.mkString)
+        sys.exit(1)
+      }
+      lock.createNewFile
+      lock.printHere(_.println(java.lang.management.ManagementFactory.getRuntimeMXBean.getName))
 
       success("Starting avalanche...") // needed to eagerly initialize package object with logging logic
       sys.addShutdownHook {
@@ -65,6 +74,9 @@ object Avalanche {
       success("Build done.")
       success("Total time: %d s, completed " + TIME_FORMAT format ((System.currentTimeMillis - startTime) / 1000, new java.util.Date))
     } catch (ErrorHandler)
+    finally {
+      lock.delete
+    }
   }
 
 }
