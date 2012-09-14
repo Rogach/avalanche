@@ -14,6 +14,12 @@ object Avalanche {
     val startTime = System.currentTimeMillis
     try {
       opts = new Opts(args)
+
+      success("Starting avalanche...") // needed to eagerly initialize package object with logging logic
+      sys.addShutdownHook {
+        error("Detected ^C signal, ending process...")
+      }
+
       val file = opts.buildFile.get.getOrElse("av.scala")
       if (!(new File(file)).exists) throw new BuildFileNotFound(file)
       BuildCompiler.compile(file)
