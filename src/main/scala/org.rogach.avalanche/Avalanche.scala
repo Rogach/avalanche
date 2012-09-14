@@ -25,6 +25,13 @@ object Avalanche {
       lock.createNewFile
       lock.printHere(_.println(java.lang.management.ManagementFactory.getRuntimeMXBean.getName))
 
+      if (opts.splitLogs()) {
+        // create directory for logs
+        val logs = new File("logs")
+        if (logs.exists) org.apache.commons.io.FileUtils.deleteDirectory(logs)
+        logs mkdirs
+      }
+
       success("Starting avalanche...") // needed to eagerly initialize package object with logging logic
       sys.addShutdownHook {
         lock.delete

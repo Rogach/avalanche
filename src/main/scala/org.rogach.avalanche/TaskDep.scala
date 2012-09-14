@@ -8,16 +8,22 @@ case class TaskDep(task: Task, args: List[String]) {
   def run = {
     val needReRun = getReRun
     if (Avalanche.opts.isVerbose) {
-      verbose("task: %s[%s]" format (task.name, args.mkString(",")) stripSuffix "[]")
+      verbose("task: %s" format this)
     } else {
       if (needReRun)
-      success(("task: %s[%s]" format (task.name, args.mkString(",")) stripSuffix "[]"))
+      success("task: %s" format this)
     }
     if ((needReRun || Avalanche.opts.isForced(this) || Avalanche.opts.allForced()) && !Avalanche.opts.isSupressed(this)) {
       if (!Avalanche.opts.dryRun()) {
         val startTime = System.currentTimeMillis
         try {
-          task.body(args)
+          if (Avalanche.opts.splitLogs()) {
+            withLog(this.toString) {
+              task.body(args)
+            }
+          } else {
+            task.body(args)
+          }
         } catch { case e =>
           error("Exception from task (%s)" format e.getMessage)
           throw new TaskFailed(task.name, args, e)
@@ -38,5 +44,6 @@ case class TaskDep(task: Task, args: List[String]) {
     case _ => false
   }
   override def hashCode = 42 * task.hashCode + args.foldLeft(1)((c, s) => c * 42 + s.hashCode)
+  override def toString = "%s[%s]" format (task.name, args.mkString(",")) stripSuffix "[]"
 }
 

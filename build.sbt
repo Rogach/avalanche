@@ -21,7 +21,8 @@ jarName in assembly <<= version ( "avalanche-%s.jar" format _ )
 libraryDependencies ++= Seq(
   "org.rogach" %% "scallop" % "0.5.2",
   "org.rogach" %% "prelude" % "0.1.14",
-  "org.scala-lang" % "scala-compiler" % "2.9.2"
+  "org.scala-lang" % "scala-compiler" % "2.9.2",
+  "commons-io" % "commons-io" % "2.1"
 )
 
 resolvers ++= Seq(
