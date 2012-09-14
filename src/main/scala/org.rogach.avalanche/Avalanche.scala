@@ -7,6 +7,7 @@ import org.rogach.Prelude._
 object Avalanche {
   val TIME_FORMAT = "%2$tb %2$te, %2$tT"
   var opts: Opts = null
+  var finished = false
 
   val tasks = collection.mutable.ListBuffer[Task]()
   val init = collection.mutable.ListBuffer[() => Unit]()
@@ -26,7 +27,8 @@ object Avalanche {
 
       success("Starting avalanche...") // needed to eagerly initialize package object with logging logic
       sys.addShutdownHook {
-        error("Detected ^C signal, ending process...")
+        lock.delete
+        if (!finished) error("Detected ^C signal, ending process...")
       }
 
       val file = opts.buildFile.get.getOrElse("av.scala")
@@ -75,7 +77,7 @@ object Avalanche {
       success("Total time: %d s, completed " + TIME_FORMAT format ((System.currentTimeMillis - startTime) / 1000, new java.util.Date))
     } catch (ErrorHandler)
     finally {
-      lock.delete
+      finished = true
     }
   }
 
