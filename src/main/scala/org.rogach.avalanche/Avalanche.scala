@@ -28,7 +28,7 @@ object Avalanche {
       success("Starting avalanche...") // needed to eagerly initialize package object with logging logic
       sys.addShutdownHook {
         lock.delete
-        if (!finished) error("Detected ^C signal, ending process...")
+        if (!finished) error("Detected abnormal exit! (some good soul issued ^C or good ol' kill)")
       }
 
       val file = opts.buildFile.get.getOrElse("av.scala")
