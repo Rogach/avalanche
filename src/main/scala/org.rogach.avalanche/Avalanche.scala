@@ -66,11 +66,11 @@ object Avalanche {
       def addDepsToGraph(t: TaskDep): Unit = {
         t.getDeps.foreach { td =>
           if (tasksToRun.nodes.contains(td)) {
-            tasksToRun += (td -> t)
+            tasksToRun += (t -> td)
             // deps of td were already added
           } else {
             tasksToRun += (td)
-            tasksToRun += (td -> t)
+            tasksToRun += (t -> td)
             addDepsToGraph(td)
           }
         }
@@ -78,7 +78,7 @@ object Avalanche {
       tasksToRun += (rootDep)
       addDepsToGraph(rootDep)
       
-      tasksToRun.topologicalSort.dropRight(1).foreach(_.run)
+      new Run(tasksToRun) start;
 
       success("Build done.")
       success("Total time: %d s, completed " + TIME_FORMAT format ((System.currentTimeMillis - startTime) / 1000, new java.util.Date))

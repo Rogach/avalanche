@@ -23,6 +23,7 @@ class Opts(args: Seq[String]) extends ScallopConf(args) {
   val listTasks = opt[Boolean]("list-tasks", short = 'L', descr = "only print list of tasks and exit")
   val splitLogs = opt[Boolean]("split-logs", short = 'W', descr = "if set, then separate directory 'logs' is created, and log file for each task is created.")
   val ignoreLock = opt[Boolean]("ignore-lock", descr = "ignore lock, that stops current build if other build process is running")
+  val parallel = opt[Int]("parallel", short = 'P', descr = "controls the maximum amount of parallel tasks executing (not exactly 'tasks', see Task.threadAmount). Defaults to serial execution", default = Some(1))
   private val quiet = opt[Boolean]("quiet", descr = "supress avalanche output")
   private val silent = opt[Boolean]("silent", descr = "supress all output, including output from scripts (stderr from scripts is still printed)")
   private val verbose = opt[Boolean]("verbose", descr = "print more information")

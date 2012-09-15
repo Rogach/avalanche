@@ -3,7 +3,7 @@ package org.rogach.avalanche
 object Graph {
   def apply[T](nodes:List[T]) = new Graph(nodes,List())
 }
-case class Graph[T](val nodes:List[T], val edges:List[(T,T)]) {
+case class Graph[T](nodes:List[T], edges:List[(T,T)]) {
   def +(node:T) = if (!nodes.contains(node)) new Graph(node :: nodes, edges) else new Graph(nodes, edges)
   def +(edge:(T,T)) = {
     if (nodes.contains(edge._1) && nodes.contains(edge._2)) {
@@ -11,6 +11,24 @@ case class Graph[T](val nodes:List[T], val edges:List[(T,T)]) {
     } else throw new Exception("One of the edge nodes is not present in the graph")
   }
   def remove(edge:(T,T)) = new Graph(nodes, edges.filter(edge !=))
+
+  /** returns a list of nodes and their children, selected in depth-first order. 
+   *  @param select Function, that specifies if search should include this node and descend into its children.
+   *                Note, that if the node is not selected, it can still be returned as child of other node!
+   */
+  def depthFirstSearch(select: T => Boolean = _ => true): List[(T, List[T])] = {
+    val visited = new collection.mutable.HashSet[T]
+    val traversal = new collection.mutable.ListBuffer[(T, List[T])]()
+    val roots = nodes.filter(n => edges.filter(_._2 == n).isEmpty).filter(select)
+    def visit(n: T) {
+      visited += n
+      val children = edges.filter(_._1 == n).map(_._2)
+      children.filterNot(visited).filter(select).foreach(visit)
+      traversal += (n -> children)
+    }
+    roots foreach visit
+    traversal.toList
+  }
 
   /* Topological sort, as per Wikipedia's article */
   def topologicalSort:List[T] = {
