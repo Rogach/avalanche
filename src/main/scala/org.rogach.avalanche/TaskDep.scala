@@ -8,12 +8,9 @@ case class TaskDep(task: Task, args: List[String]) {
   def getReRun = try { task.rerun(args) } catch { case e => throw new TaskSpecException(this, e) }
   def run = {
     val needReRun = getReRun
-    if (Avalanche.opts.isVerbose) {
-      verbose("Started task '%s', on %s" format (this, now))
-    } else {
-      if (needReRun)
-      success("Started task '%s', on %s" format (this, now))
-    }
+    verbose("Started task '%s', on %s" format (this, now))
+    if (needReRun)
+      success("%stask '%s', on %s" format ((if (Avalanche.opts.dryRun()) "" else "Started "), this, now))
     if ((needReRun || Avalanche.opts.isForced(this) || Avalanche.opts.allForced()) && !Avalanche.opts.isSupressed(this)) {
       if (!Avalanche.opts.dryRun()) {
         val startTime = System.currentTimeMillis
