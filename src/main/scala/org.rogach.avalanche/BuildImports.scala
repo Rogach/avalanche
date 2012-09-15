@@ -53,8 +53,28 @@ object BuildImports {
     if (exitCode != 0) sys.error("Non-zero exit code from script: '%s'" format f)
   }  
   
+  /** helper, that is used to run task only once in a build, for each set of arguments. Useful in testing.
+   *  Usage: 
+   *  {{{
+   *  task("sometask", rerun = once, ...)
+   *  }}}
+   */
+  def once = new (List[String] => Boolean) {
+    val seen = collection.mutable.HashSet[List[String]]()
+    def apply(l: List[String]) = 
+      if (seen(l)) false
+      else {
+        seen += l
+        true
+      }
+  }
+  
+  def nodeps = (a:List[String]) => Nil
+  
   implicit def task2taskDep(t: Task) = TaskDep(t, Nil)
   implicit def taskDep2taskDepSeq(t: TaskDep) = Seq(t)
   implicit def task2taskDepSeq(t: Task) = Seq(TaskDep(t, Nil))
   implicit def taskSeq2taskDepSeq(ts: Seq[Task]) = ts.map(TaskDep(_, Nil))
+  
+  def log(msg: String) = avalanche.logOutput.value.println(msg)
 }
