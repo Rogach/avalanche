@@ -5,9 +5,8 @@ import avalanche._
 import org.rogach.Prelude._
 
 object Avalanche {
-  val TIME_FORMAT = "%2$tb %2$te, %2$tT"
   var opts: Opts = null
-  var finished = false
+  @volatile var finished = false
 
   val tasks = collection.mutable.ListBuffer[Task]()
   val init = collection.mutable.ListBuffer[() => Unit]()
@@ -46,6 +45,7 @@ object Avalanche {
       if (opts.listTasks()) {
         println("Available tasks:")
         tasks.foreach(t => println("  " + t.name))
+        finished = true
         sys.exit(1)
       }
       

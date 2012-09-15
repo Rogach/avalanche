@@ -21,6 +21,7 @@ object BuildCompiler {
     } catch { case e =>
       error("Failed to compile build file '%s'" format file)
       e.printStackTrace
+      Avalanche.finished = true
       sys.exit(1)
     }
   }
