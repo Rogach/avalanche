@@ -81,7 +81,7 @@ object Avalanche {
       new Run(tasksToRun) start;
 
       success("Build done.")
-      success("Total time: %d s, completed " + TIME_FORMAT format ((System.currentTimeMillis - startTime) / 1000, new java.util.Date))
+      success("Total time: %d s, completed %s" format ((System.currentTimeMillis - startTime) / 1000, now))
     } catch (ErrorHandler)
     finally {
       finished = true
