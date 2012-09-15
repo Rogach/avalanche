@@ -19,8 +19,7 @@ package object avalanche {
 
   def log(mess:String, level:String):Unit = {
     if (!Avalanche.opts.isQuiet) {
-      // print prefix
-      print(
+      val prefix = 
         if (System.console() == null || logOutput.value != System.out) "[avalanche] "
         else {
          "[\033[%smavalanche\033[0m] " format (
@@ -31,8 +30,8 @@ package object avalanche {
               case _ => "0"
             }
           )
-        })
-      println(mess)
+        }
+      println(prefix + mess)
     }
   }
   def log(mess:String):Unit = log(mess, INFO)
@@ -44,4 +43,6 @@ package object avalanche {
       log(mess, VERBOSE)
   }
   
+  val TIME_FORMAT = "%1$tb %1$te, %1$tT"
+  def now = TIME_FORMAT format (new java.util.Date)
 }
