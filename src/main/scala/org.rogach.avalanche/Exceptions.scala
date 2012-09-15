@@ -8,3 +8,5 @@ case class TaskFailed(name: String, args: List[String], e: Throwable) extends Ex
 case class TaskDepParseException(s: String) extends Exception
 case class InputFileNotFound(name: String, task: String, args: List[String]) extends Exception
 case class TaskNotCompleted(task: String, args: List[String]) extends Exception
+case class VeryThreadyTask(td: TaskDep) extends Exception
+case class TaskSpecException(td: TaskDep, e: Throwable) extends Exception

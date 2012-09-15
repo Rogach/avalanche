@@ -1,17 +1,18 @@
 package org.rogach.avalanche
 
 import avalanche._
+import java.util.Date
 
 case class TaskDep(task: Task, args: List[String]) {
-  def getDeps = task.deps(args)
-  def getReRun = task.rerun(args)
+  def getDeps = try { task.deps(args) } catch { case e => throw new TaskSpecException(this, e) }
+  def getReRun = try { task.rerun(args) } catch { case e => throw new TaskSpecException(this, e) }
   def run = {
     val needReRun = getReRun
     if (Avalanche.opts.isVerbose) {
-      verbose("task: %s" format this)
+      verbose("Started task '%s', on %s" format (this, now))
     } else {
       if (needReRun)
-      success("task: %s" format this)
+      success("Started task '%s', on %s" format (this, now))
     }
     if ((needReRun || Avalanche.opts.isForced(this) || Avalanche.opts.allForced()) && !Avalanche.opts.isSupressed(this)) {
       if (!Avalanche.opts.dryRun()) {
@@ -33,7 +34,8 @@ case class TaskDep(task: Task, args: List[String]) {
         if (getReRun) throw new TaskNotCompleted(task.name, args)
 
         val endTime = System.currentTimeMillis
-        success("Total time: %d s, completed on " + Avalanche.TIME_FORMAT format ((endTime - startTime)/1000, new java.util.Date))        }
+        success("Ended task '%s', total time: %d s, completed on %s" format (this, (endTime - startTime)/1000, now))
+      }
     } else {
       // everything's fine, we can rest
       verbose("Not rebuilding")

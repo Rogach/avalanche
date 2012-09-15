@@ -19,6 +19,11 @@ object ErrorHandler extends PartialFunction[Throwable,Unit] {
       error("Failed to find input file '%s' for task %s[%s]" format (fn, task, args.mkString(",")))
     case TaskNotCompleted(task, args) =>
       error("Failed to complete the task '%s[%s]' - after running the task, rerun is still needed." format (task, args))
+    case VeryThreadyTask(td) =>
+      error("Task '%s' requires too much threads: required = %d, max = %d." format (td, td.task.threadAmount, Avalanche.opts.parallel()))
+    case TaskSpecException(td, ex) =>
+      error("Exception thrown in definition of task '%s':" format td)
+      ex.printStackTrace
     case a => 
       error("Internal exception, please file bug report!")
       a.printStackTrace
