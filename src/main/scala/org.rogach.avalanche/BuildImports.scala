@@ -31,6 +31,18 @@ object BuildImports {
       body = body
     )
     
+  def task0(name: String, inputs: => Seq[File], outputs: => Seq[File], deps: => Seq[TaskDep], body: => Unit) {
+    task(name, _ => inputs, _ => outputs, _ => deps, _ => body)
+  }
+  def task1(
+      name: String,
+      inputs: String => Seq[File],
+      outputs: String => Seq[File],
+      deps: String => Seq[TaskDep], 
+      body: String => Unit) {
+    task(name, l => inputs(l.head), l => outputs(l.head), l => deps(l.head), l => body(l.head))
+  }
+    
   def files(names: String*)(args: List[String]) = names.map(_.format(args:_*)).map(new File(_))
   def glob(names: String*)(args: List[String]) = 
     names.map(n => Seq("bash","-c","ls -1 %s" format (n.format(args:_*))).lines_!(ProcessLogger(s =>())).toList.headOption.getOrElse(n)).map(new File(_))
