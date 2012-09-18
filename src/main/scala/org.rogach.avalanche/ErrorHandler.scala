@@ -20,7 +20,7 @@ object ErrorHandler extends PartialFunction[Throwable,Unit] {
     case TaskNotCompleted(task, args) =>
       error("Failed to complete the task '%s[%s]' - after running the task, rerun is still needed." format (task, args))
     case VeryThreadyTask(td) =>
-      error("Task '%s' requires too much threads: required = %d, max = %d." format (td, td.task.threadAmount, Avalanche.opts.parallel()))
+      error("Task '%s' requires too much threads: required = %d, max = %d." format (td, td.task.threads, Avalanche.opts.parallel()))
     case TaskSpecException(td, ex) =>
       error("Exception thrown in definition of task '%s':" format td)
       ex.printStackTrace

@@ -25,5 +25,5 @@ val d = task("d",
   deps = nodeps,
   body = wait("d"))
   
-a.threadAmount = 3
-b.threadAmount = 2
+a.threads = 3
+b.threads = 2

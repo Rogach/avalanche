@@ -60,18 +60,18 @@ package parallel {
     def receive = {
       case Next => 
         next map { n =>
-          if (n.task.threadAmount <= threads) {
+          if (n.task.threads <= threads) {
             context.actorOf(Props[Runner]) ! StartTask(n)
-            threads -= n.task.threadAmount
+            threads -= n.task.threads
             status(n) = Started
             // there may be more free processors left, try starting newone
             next.map { n =>
-              if (n.task.threadAmount <= threads) {
+              if (n.task.threads <= threads) {
                 self ! Next
               }
             }
-          } else if (n.task.threadAmount > Avalanche.opts.parallel()) {
-            threads -= n.task.threadAmount
+          } else if (n.task.threads > Avalanche.opts.parallel()) {
+            threads -= n.task.threads
             self ! TaskFailed(n, new VeryThreadyTask(n))
           }
         } getOrElse { 
@@ -88,11 +88,11 @@ package parallel {
         }
       case TaskSuccess(t) => 
         status(t) = Completed
-        threads += t.task.threadAmount
+        threads += t.task.threads
         self ! Next
       case TaskFailed(t, ex) =>
         status(t) = Failed
-        threads += t.task.threadAmount
+        threads += t.task.threads
         exceptions += (t -> ex)
         self ! Next
     }

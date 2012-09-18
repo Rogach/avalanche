@@ -6,5 +6,8 @@ case class Task(
     deps: List[String] => Seq[TaskDep],
     body: List[String] => Unit) {
   def apply(args: String*) = TaskDep(this, args.toList)
-  var threadAmount = 1
+  /** Amount of threads that this task will consume if executed. 
+   *  Has effect only if parallel execution is enabled.
+   */
+  var threads = 1
 }
