@@ -31,7 +31,7 @@ object BuildImports {
       body = body
     )
     
-  def task0(name: String, inputs: => Seq[File], outputs: => Seq[File], deps: => Seq[TaskDep], body: => Unit) {
+  def task0(name: String, inputs: => Seq[File], outputs: => Seq[File], deps: => Seq[TaskDep], body: => Unit) = {
     task(name, _ => inputs, _ => outputs, _ => deps, _ => body)
   }
   def task1(
@@ -39,7 +39,7 @@ object BuildImports {
       inputs: String => Seq[File],
       outputs: String => Seq[File],
       deps: String => Seq[TaskDep], 
-      body: String => Unit) {
+      body: String => Unit) = {
     task(name, l => inputs(l.head), l => outputs(l.head), l => deps(l.head), l => body(l.head))
   }
     
