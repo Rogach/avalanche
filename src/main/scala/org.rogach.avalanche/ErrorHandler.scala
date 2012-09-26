@@ -4,28 +4,33 @@ import avalanche._
 
 object ErrorHandler extends PartialFunction[Throwable,Unit] {
   def isDefinedAt(e:Throwable) = true
+  def printError(msg: String) = {
+    error(msg)
+    error("BUILD FAILED")
+    error("Total time: %d s, completed %s" format ((System.currentTimeMillis - Avalanche.startTime) / 1000, now))
+  }
   def apply(e:Throwable) = e match {
     case BuildFileNotFound(fname) =>
-      error("Build file not found: %s" format fname)
+      printError("Build file not found: %s" format fname)
     case TaskNotFound(name) =>
-      error("Task not found: '%s'" format name)
+      printError("Task not found: '%s'" format name)
     case TaskFailed(name, args, e) =>
-      error("Task failed: %s[%s]" format (name, args.mkString(",")))
+      printError("Task failed: %s[%s]" format (name, args.mkString(",")))
       if (!Avalanche.opts.isSilent)
         e.printStackTrace
     case TaskDepParseException(s) =>
-      error("Failed to parse task dep: '%s'" format s)
+      printError("Failed to parse task dep: '%s'" format s)
     case InputFileNotFound(fn, task, args) =>
-      error("Failed to find input file '%s' for task %s[%s]" format (fn, task, args.mkString(",")))
+      printError("Failed to find input file '%s' for task %s[%s]" format (fn, task, args.mkString(",")))
     case TaskNotCompleted(task, args) =>
-      error("Failed to complete the task '%s[%s]' - after running the task, rerun is still needed." format (task, args))
+      printError("Failed to complete the task '%s[%s]' - after running the task, rerun is still needed." format (task, args))
     case VeryThreadyTask(td) =>
-      error("Task '%s' requires too much threads: required = %d, max = %d." format (td, td.task.threads, Avalanche.opts.parallel()))
+      printError("Task '%s' requires too much threads: required = %d, max = %d." format (td, td.task.threads, Avalanche.opts.parallel()))
     case TaskSpecException(td, ex) =>
-      error("Exception thrown in definition of task '%s':" format td)
+      printError("Exception thrown in definition of task '%s':" format td)
       ex.printStackTrace
     case a => 
-      error("Internal exception, please file bug report!")
+      printError("Internal exception, please file bug report!")
       a.printStackTrace
   }
 }

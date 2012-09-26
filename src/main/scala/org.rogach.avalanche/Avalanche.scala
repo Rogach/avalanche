@@ -5,6 +5,7 @@ import avalanche._
 import org.rogach.Prelude._
 
 object Avalanche {
+  val startTime = System.currentTimeMillis
   var opts: Opts = null
   @volatile var finished = false
 
@@ -12,7 +13,6 @@ object Avalanche {
   val init = collection.mutable.ListBuffer[() => Unit]()
   
   def main(args:Array[String]) {
-    val startTime = System.currentTimeMillis
     val lock = new File(".av.lock")
     try {
       opts = new Opts(args)
@@ -80,7 +80,7 @@ object Avalanche {
       
       new Run(tasksToRun) start;
 
-      success("Build done.")
+      success("BUILD SUCCESSFULL")
       success("Total time: %d s, completed %s" format ((System.currentTimeMillis - startTime) / 1000, now))
     } catch (ErrorHandler)
     finally {
