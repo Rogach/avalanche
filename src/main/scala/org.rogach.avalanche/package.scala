@@ -45,4 +45,25 @@ package object avalanche {
   
   val TIME_FORMAT = "%1$tb %1$te, %1$tT"
   def now = TIME_FORMAT format (new java.util.Date)
+  
+  val success_banner = """
+  ██████   ██    ██  ██████  ██      ██████          ██████  ██    ██   █████    █████   ██████  ██████  ██████
+  ██   ██  ██    ██    ██    ██      ██   ██    ██   ██      ██    ██  ██   ██  ██   ██  ██      ██      ██    
+  ██   ██  ██    ██    ██    ██      ██    ██   ██   ██      ██    ██  ██       ██       ██      ██      ██    
+  ██████   ██    ██    ██    ██      ██    ██        ██████  ██    ██  ██       ██       ██████  ██████  ██████
+  ██   ██  ██    ██    ██    ██      ██    ██   ██       ██  ██    ██  ██       ██       ██          ██      ██
+  ██   ██  ██    ██    ██    ██      ██   ██    ██       ██  ██    ██  ██   ██  ██   ██  ██          ██      ██
+  ██████    ██████   ██████  ██████  ██████          ██████   ██████    █████    █████   ██████  ██████  ██████
+"""  
+
+  def printSuccessBanner = {
+    if (System.console() != null) {
+      print("\033[32m")
+      print(success_banner)
+      println("\033[0m")
+    } else {
+      print(success_banner)
+      println("")
+    }
+  }
 }

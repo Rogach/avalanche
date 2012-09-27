@@ -80,8 +80,10 @@ object Avalanche {
       
       new Run(tasksToRun) start;
 
-      success("BUILD SUCCESSFULL")
-      success("Total time: %d s, completed %s" format ((System.currentTimeMillis - startTime) / 1000, now))
+      if (!opts.dryRun()) {
+        printSuccessBanner
+        success("Total time: %d s, completed %s" format ((System.currentTimeMillis - startTime) / 1000, now))
+      }
     } catch (ErrorHandler)
     finally {
       finished = true
