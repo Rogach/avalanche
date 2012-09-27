@@ -23,7 +23,7 @@ object ErrorHandler extends PartialFunction[Throwable,Unit] {
     case InputFileNotFound(fn, task, args) =>
       printError("Failed to find input file '%s' for task %s[%s]" format (fn, task, args.mkString(",")))
     case TaskNotCompleted(task, args) =>
-      printError("Failed to complete the task '%s[%s]' - after running the task, rerun is still needed." format (task, args))
+      printError("Failed to complete the task '%s[%s]' - after running the task, rerun is still needed." format (task, args.mkString(", ")))
     case VeryThreadyTask(td) =>
       printError("Task '%s' requires too much threads: required = %d, max = %d." format (td, td.task.threads, Avalanche.opts.parallel()))
     case TaskSpecException(td, ex) =>
