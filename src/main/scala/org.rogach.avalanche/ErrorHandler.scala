@@ -6,7 +6,7 @@ object ErrorHandler extends PartialFunction[Throwable,Unit] {
   def isDefinedAt(e:Throwable) = true
   def printError(msg: String) = {
     error(msg)
-    if (Avalanche.opts.parallel() == 1 ) {
+    if (Avalanche.opts == null || Avalanche.opts.parallel() == 1 ) {
       // in parallel execution, those messages are printed in Run.parallel
       error("BUILD FAILED")
       error("Total time: %d s, completed %s" format ((System.currentTimeMillis - Avalanche.startTime) / 1000, now))

@@ -18,7 +18,7 @@ package object avalanche {
   }
 
   def log(mess:String, level:String):Unit = {
-    if (!Avalanche.opts.isQuiet) {
+    if (Avalanche.opts == null || !Avalanche.opts.isQuiet) {
       val prefix = 
         if (System.console() == null || logOutput.value != System.out) "[avalanche] "
         else {
