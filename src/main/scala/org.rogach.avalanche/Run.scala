@@ -81,7 +81,10 @@ package parallel {
             exceptions.headOption.foreach { _ =>
               error("There were errors during parallel execution:")
               exceptions.map(_._2).foreach(ErrorHandler)
+
               Avalanche.finished = true
+              error("BUILD FAILED")
+              error("Total time: %d s, completed %s" format ((System.currentTimeMillis - Avalanche.startTime) / 1000, now))
               sys.exit(1)
             }
           }
