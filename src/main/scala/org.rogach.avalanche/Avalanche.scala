@@ -21,8 +21,10 @@ object Avalanche {
         error("Detected other build process with pid '%s' running, exiting. Use --ignore-lock to force running." format io.Source.fromFile(lock).getLines.mkString)
         sys.exit(1)
       }
-      lock.createNewFile
-      lock.printHere(_.println(java.lang.management.ManagementFactory.getRuntimeMXBean.getName))
+      if (!opts.ignoreLock()) {
+        lock.createNewFile
+        lock.printHere(_.println(java.lang.management.ManagementFactory.getRuntimeMXBean.getName))
+      }
 
       if (opts.splitLogs()) {
         // create directory for logs
@@ -33,7 +35,7 @@ object Avalanche {
 
       success("Starting avalanche...") // needed to eagerly initialize package object with logging logic
       sys.addShutdownHook {
-        lock.delete
+        if (opts.ignoreLock()) lock.delete
         if (!finished) error("Detected abnormal exit! (some good soul issued ^C or good ol' kill)")
       }
 
