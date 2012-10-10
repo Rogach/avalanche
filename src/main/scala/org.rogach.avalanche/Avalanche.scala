@@ -35,7 +35,7 @@ object Avalanche {
 
       success("Starting avalanche...") // needed to eagerly initialize package object with logging logic
       sys.addShutdownHook {
-        if (opts.ignoreLock()) lock.delete
+        if (!opts.ignoreLock()) lock.delete
         if (!finished) error("Detected abnormal exit! (some good soul issued ^C or good ol' kill)")
       }
 
