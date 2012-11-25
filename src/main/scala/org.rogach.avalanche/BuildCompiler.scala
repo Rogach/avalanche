@@ -69,7 +69,7 @@ class Compiler {
          is being thrown with a detailed message. */
      if (reporter.hasErrors) {
        throw new CompilationFailedException(source,
-         reporter.infos.map(info => (info.pos.line, info.msg)))
+         reporter.infos.map(info => CompileError(info.pos.line, info.pos.column, info.pos.lineContent, info.msg)).toList.sortBy(_.line))
      }
   
      /*! Each time new `AbstractFileClassLoader` is created for loading classes
@@ -98,5 +98,7 @@ class Compiler {
    of what went wrong during compilation.
   */
 class CompilationFailedException(val programme: String,
-                                  val messages: Iterable[(Int, String)])
-   extends Exception("\n" + messages.map(m => "line %d: %s" format (m._1 - 3, m._2)).mkString("\n"))
+                                  val messages: Iterable[CompileError])
+   extends Exception("\n" + messages.map(m => "line %d: %s \n    %s\n    %s" format (m.line - 3, m.message, m.lineContent, " " * (m.column - 1) + "^")).mkString("\n"))
+
+case class CompileError(line: Int, column: Int, lineContent: String, message: String)
