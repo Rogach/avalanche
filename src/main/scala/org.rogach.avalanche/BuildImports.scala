@@ -49,7 +49,7 @@ object BuildImports {
   def globs(names: String*)(args: List[String]) =
     names.flatMap(n => Seq("bash","-c","ls -1 %s" format (n.format(args:_*))).lines_!(ProcessLogger(s =>())).toList).map(new File(_))
 
-  def pwd = f(".").getAbsolutePath
+  def pwd = f(".").getParentFile.getAbsolutePath
   
   def onInit(fn: => Unit) = {
     Avalanche.init += (() => fn)
