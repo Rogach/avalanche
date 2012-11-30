@@ -63,9 +63,9 @@ object BuildImports {
   def f(s: String): File = new File(s)
 
   def exec(f: String): Unit = exec(f, Map())
-  def exec(f: String, env: Map[String,String]): Unit = {
+  def exec(f: String, env: Map[String,Any]): Unit = {
     val out = avalanche.logOutput.value
-    val exitCode = Process(f, None, env.toSeq:_*).!(ProcessLogger(out.println, out.println))
+    val exitCode = Process(f, None, env.mapValues(_.toString).toSeq:_*).!(ProcessLogger(out.println, out.println))
     if (exitCode != 0) sys.error("Non-zero exit code from script: '%s'" format f)
   }  
   def exec(pb: ProcessBuilder): Unit = {
