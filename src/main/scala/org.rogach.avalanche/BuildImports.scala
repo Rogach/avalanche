@@ -42,6 +42,9 @@ object BuildImports {
       body: String => Unit) = {
     task(name, l => inputs(l.head), l => outputs(l.head), l => deps(l.head), l => body(l.head))
   }
+
+  val NoBody: List[String] => Unit = _ => ()
+  def aggregate(name: String, deps: => Seq[TaskDep]) = task(name, once, _ => deps, NoBody)
     
   def files(names: String*)(args: List[String]) = names.map(_.format(args:_*)).map(new File(_))
   def glob(names: String*)(args: List[String]) = 

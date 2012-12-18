@@ -2,10 +2,7 @@ onInit {
   println("init")
 }
 createDirs("target/a", "target/b")
-val default = task("default",
-  rerun = once,
-  deps = _ => List(second("a"), third),
-  body = a => println("Default task, with params: %s" format a.mkString(", ")))
+val default = aggregate("default", List(second("a"), third))
 val second = task("second",
   rerun = once,
   deps = _ => Nil,
@@ -14,3 +11,4 @@ val third = task("third",
   rerun = once,
   deps = _ => second("a"),
   body = a => println("Third task, with params: %s" format a.mkString(", ")))
+  

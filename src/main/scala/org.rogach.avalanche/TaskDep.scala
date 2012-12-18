@@ -9,7 +9,7 @@ case class TaskDep(task: Task, args: List[String]) {
   def run = {
     val needReRun = getReRun
     verbose("Started task '%s', on %s" format (this, now))
-    if (needReRun)
+    if (needReRun && task.body != BuildImports.NoBody)
       success("%stask '%s', on %s" format ((if (Avalanche.opts.dryRun()) "" else "Started "), this, now))
     if ((needReRun || Avalanche.opts.isForced(this) || Avalanche.opts.allForced()) && !Avalanche.opts.isSupressed(this)) {
       if (!Avalanche.opts.dryRun()) {
@@ -31,7 +31,7 @@ case class TaskDep(task: Task, args: List[String]) {
         if (getReRun) throw new TaskNotCompleted(task.name, args)
 
         val endTime = System.currentTimeMillis
-        success("Ended task '%s', total time: %d s, completed on %s" format (this, (endTime - startTime)/1000, now))
+        if (task.body != BuildImports.NoBody) success("Ended task '%s', total time: %d s, completed on %s" format (this, (endTime - startTime)/1000, now))
       }
     } else {
       // everything's fine, we can rest
