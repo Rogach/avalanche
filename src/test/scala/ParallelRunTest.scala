@@ -24,6 +24,6 @@ class ParallelRunTest extends UsefulTest {
       new Run(Graph(List(a,b), List(a() -> b()))) runParallel;
       c ==== 2
     }
-    
+
   }
 }

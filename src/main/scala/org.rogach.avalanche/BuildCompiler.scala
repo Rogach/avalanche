@@ -30,57 +30,57 @@ object BuildCompiler {
 // from habrahabr.ru
 
 /*!# Compiler
-  
+
    This class is a wrapper over Scala Compiler API
    which has simple interface just accepting the source code string.
-  
+
    Compiles the source code assuming that it is a .scala source file content.
    It used a classpath of the environment that called the `Compiler` class.
   */
-  
+
 import tools.nsc.{Global, Settings}
 import tools.nsc.io._
 import tools.nsc.reporters.StoreReporter
 import tools.nsc.interpreter.AbstractFileClassLoader
 import tools.nsc.util._
-  
+
 class Compiler {
-  
+
    def compile(source: String): Iterable[Class[_]] = {
-  
+
      // prepare the code you want to compile
      val sources = List(new BatchSourceFile("<source>", source))
-  
+
      // Setting the compiler settings
      val settings = new Settings
-  
+
      /*! Take classpath from currently running scala environment. */
      settings.usejavacp.value = true
-  
+
      /*! Save class files for compiled classes into a virtual directory in memory. */
      val directory = new VirtualDirectory("(memory)", None)
      settings.outputDirs.setSingleOutput(directory)
-  
+
      val reporter = new StoreReporter()
      val compiler = new Global(settings, reporter)
      new compiler.Run()compileSources(sources)
-  
+
      /*! After the compilation if errors occured, `CompilationFailedException`
          is being thrown with a detailed message. */
      if (reporter.hasErrors) {
        throw new CompilationFailedException(source,
          reporter.infos.map(info => CompileError(info.pos.line, info.pos.column, info.pos.lineContent, info.msg)).toList.sortBy(_.line))
      }
-  
+
      /*! Each time new `AbstractFileClassLoader` is created for loading classes
        it gives an opportunity to treat same name classes loading well.
       */
      // Loading new compiled classes
      val classLoader =  new AbstractFileClassLoader(directory, this.getClass.getClassLoader())
-  
+
      /*! When classes are loading inner classes are being skipped. */
      for (classFile <- directory; if (!classFile.name.contains('$'))) yield {
-  
+
        /*! Each file name is being constructed from a path in the virtual directory. */
        val path = classFile.path
        val fullQualifiedName = path.substring(path.indexOf('/')+1,path.lastIndexOf('.')).replace("/",".")
@@ -90,9 +90,9 @@ class Compiler {
      }
    }
 }
-  
+
 /*!### Compilation exception
-  
+
    Compilation exception is defined this way.
    It contains program was compiling and error positions with messages
    of what went wrong during compilation.

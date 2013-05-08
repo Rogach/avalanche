@@ -9,11 +9,11 @@ class Run(tasks: Graph[TaskDep]) {
       runSerial
     else runParallel
   }
-  
+
   def runSerial = {
     tasks.topologicalSort.reverse.dropRight(1).foreach(_.run)
   }
-    
+
   def runParallel = {
     import parallel._;
     val system = ActorSystem("AvalancheParallelRunners")
@@ -30,14 +30,14 @@ package parallel {
   case object Next // try to run next task
   case class StartTask(td: TaskDep)
   case class TaskSuccess(td: TaskDep)
-  case class TaskFailed(td: TaskDep, th: Throwable) 
-  
+  case class TaskFailed(td: TaskDep, th: Throwable)
+
   sealed abstract class TaskState
   case object Pending extends TaskState
   case object Started extends TaskState
   case object Completed extends TaskState
   case object Failed extends TaskState
-  
+
   class Master(tasks: Graph[TaskDep]) extends Actor {
     val status = collection.mutable.Map[TaskDep, TaskState]((tasks.nodes.map(_ -> Pending)):_*)
     val exceptions = collection.mutable.ListBuffer[(TaskDep, Throwable)]()
@@ -56,9 +56,9 @@ package parallel {
           } else Some(t)
       }
     }
-    
+
     def receive = {
-      case Next => 
+      case Next =>
         next map { n =>
           if (n.task.threads <= threads) {
             context.actorOf(Props[Runner]) ! StartTask(n)
@@ -74,7 +74,7 @@ package parallel {
             threads -= n.task.threads
             self ! TaskFailed(n, new VeryThreadyTask(n))
           }
-        } getOrElse { 
+        } getOrElse {
           // check that there are no tasks executing
           if (threads == Avalanche.opts.parallel()) {
             context.system.shutdown
@@ -89,7 +89,7 @@ package parallel {
             }
           }
         }
-      case TaskSuccess(t) => 
+      case TaskSuccess(t) =>
         status(t) = Completed
         threads += t.task.threads
         self ! Next

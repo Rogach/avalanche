@@ -8,7 +8,7 @@ package object avalanche {
   val SUCCESS = "success"
   val VERBOSE = "verbose"
   val INFO = "info"
-  
+
   lazy val logOutput = new util.DynamicVariable[PrintStream](System.out)
   def withLog[A](s: String)(fn: => A): A = {
     val fout = new PrintStream("logs/%s.log" format s)
@@ -19,7 +19,7 @@ package object avalanche {
 
   def log(mess:String, level:String):Unit = {
     if (Avalanche.opts == null || !Avalanche.opts.isQuiet) {
-      val prefix = 
+      val prefix =
         if (System.console() == null || logOutput.value != System.out) "[avalanche] "
         else {
          "[\033[%smavalanche\033[0m] " format (
@@ -42,19 +42,19 @@ package object avalanche {
     if (Avalanche.opts.isVerbose)
       log(mess, VERBOSE)
   }
-  
+
   val TIME_FORMAT = "%1$tb %1$te, %1$tT"
   def now = TIME_FORMAT format (new java.util.Date)
-  
+
   val success_banner = """
   ██████  ██    ██   █████    █████   ██████  ██████  ██████
-  ██      ██    ██  ██   ██  ██   ██  ██      ██      ██    
-  ██      ██    ██  ██       ██       ██      ██      ██    
+  ██      ██    ██  ██   ██  ██   ██  ██      ██      ██
+  ██      ██    ██  ██       ██       ██      ██      ██
   ██████  ██    ██  ██       ██       ██████  ██████  ██████
       ██  ██    ██  ██       ██       ██          ██      ██
       ██  ██    ██  ██   ██  ██   ██  ██          ██      ██
   ██████   ██████    █████    █████   ██████  ██████  ██████
-"""  
+"""
 
   def printSuccessBanner = {
     if (System.console() != null) {

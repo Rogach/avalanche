@@ -20,8 +20,8 @@ object Utils {
   def parseTaskDep(s: String): TaskDep = {
     val r = TaskDepParser(s)
     TaskDep(
-      Avalanche.tasks.find(_.name == r._1).getOrElse(throw new TaskNotFound(r._1)), 
+      Avalanche.tasks.find(_.name == r._1).getOrElse(throw new TaskNotFound(r._1)),
       r._2.getOrElse(Nil))
   }
-  
+
 }

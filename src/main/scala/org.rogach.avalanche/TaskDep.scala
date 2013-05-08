@@ -49,4 +49,3 @@ case class TaskDep(task: Task, args: List[String]) {
   override def hashCode = 42 * task.hashCode + args.foldLeft(1)((c, s) => c * 42 + s.hashCode)
   override def toString = "%s[%s]" format (task.name, args.mkString(",")) stripSuffix "[]"
 }
-

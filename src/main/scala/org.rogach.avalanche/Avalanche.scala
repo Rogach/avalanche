@@ -11,7 +11,7 @@ object Avalanche {
 
   val tasks = collection.mutable.ListBuffer[Task]()
   val init = collection.mutable.ListBuffer[() => Unit]()
-  
+
   def main(args:Array[String]) {
     val lock = new File(".av.lock")
     try {
@@ -50,14 +50,14 @@ object Avalanche {
         finished = true
         sys.exit(1)
       }
-      
+
       init.foreach(_())
 
       // create a "root" task, that would trigger the build
       val rootTask = new Task(
-        name = "-avalanche-root-task", 
+        name = "-avalanche-root-task",
         rerun = _ => true,
-        deps = _ => 
+        deps = _ =>
           if (opts.requestedTasks.isEmpty) List(tasks.find(_.name == "default").map(BuildImports.task2taskDep).getOrElse(throw new TaskNotFound("default")))
           else opts.requestedTasks.map(Utils.parseTaskDep),
         body = _ => ())
@@ -79,7 +79,7 @@ object Avalanche {
       }
       tasksToRun += (rootDep)
       addDepsToGraph(rootDep)
-      
+
       new Run(tasksToRun) start;
 
       if (!opts.dryRun()) {

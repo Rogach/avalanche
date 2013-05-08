@@ -34,7 +34,7 @@ object BuildImports {
           }
         ).flatten
         val inputsModifyTime = if (inputsModify.isEmpty) System.currentTimeMillis else inputsModify.max
-        
+
         val outputsModify = outputs(args).map(_.lastModified)
         val outputsModifyTime = if (outputsModify.isEmpty) 0 else outputsModify.min
         inputsModifyTime > outputsModifyTime
@@ -42,7 +42,7 @@ object BuildImports {
       deps = deps,
       body = body
     )
-    
+
   def task0(name: String, inputs: => Seq[File], outputs: => Seq[File], deps: => Seq[TaskDep], body: => Unit) = {
     task(name, _ => inputs, _ => outputs, _ => deps, _ => body)
   }
@@ -50,22 +50,22 @@ object BuildImports {
       name: String,
       inputs: String => Seq[File],
       outputs: String => Seq[File],
-      deps: String => Seq[TaskDep], 
+      deps: String => Seq[TaskDep],
       body: String => Unit) = {
     task(name, l => inputs(l.head), l => outputs(l.head), l => deps(l.head), l => body(l.head))
   }
 
   val NoBody: List[String] => Unit = _ => ()
   def aggregate(name: String, deps: => Seq[TaskDep]) = task(name, once, _ => deps, NoBody)
-    
+
   def files(names: String*)(args: List[String]) = names.map(_.format(args:_*)).map(new File(_))
-  def glob(names: String*)(args: List[String]) = 
+  def glob(names: String*)(args: List[String]) =
     names.map(n => Seq("bash","-c","ls -1 %s" format (n.format(args:_*))).lines_!(ProcessLogger(s =>())).toList.headOption.getOrElse(n)).map(new File(_))
   def globs(names: String*)(args: List[String]) =
     names.flatMap(n => Seq("bash","-c","ls -1 %s" format (n.format(args:_*))).lines_!(ProcessLogger(s =>())).toList).map(new File(_))
 
   def pwd = f(".").getAbsoluteFile.getParent
-  
+
   def onInit(fn: => Unit) = {
     Avalanche.init += (() => fn)
   }
@@ -82,35 +82,35 @@ object BuildImports {
     val out = avalanche.logOutput.value
     val exitCode = Process(f, None, env.mapValues(_.toString).toSeq:_*).!(ProcessLogger(out.println, out.println))
     if (exitCode != 0) sys.error("Non-zero exit code from script: '%s'" format f)
-  }  
+  }
   def exec(pb: ProcessBuilder): Unit = {
     val out = avalanche.logOutput.value
     val exitCode = pb.!(ProcessLogger(out.println, out.println))
     if (exitCode != 0) sys.error("Non-zero exit code from process!")
   }
-  
+
   /** helper, that is used to run task only once in a build, for each set of arguments. Useful in testing.
-   *  Usage: 
+   *  Usage:
    *  {{{
    *  task("sometask", rerun = once, ...)
    *  }}}
    */
   def once = new (List[String] => Boolean) {
     val seen = collection.mutable.HashSet[List[String]]()
-    def apply(l: List[String]) = 
+    def apply(l: List[String]) =
       if (seen(l)) false
       else {
         seen += l
         true
       }
   }
-  
+
   def nodeps = (a:List[String]) => Nil
-  
+
   implicit def task2taskDep(t: Task) = TaskDep(t, Nil)
   implicit def taskDep2taskDepSeq(t: TaskDep) = Seq(t)
   implicit def task2taskDepSeq(t: Task) = Seq(TaskDep(t, Nil))
   implicit def taskSeq2taskDepSeq(ts: Seq[Task]) = ts.map(TaskDep(_, Nil))
-  
+
   def log(msg: String) = avalanche.logOutput.value.println(msg)
 }

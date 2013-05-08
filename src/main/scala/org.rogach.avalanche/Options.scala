@@ -5,15 +5,15 @@ import org.rogach.scallop._
 
 class Opts(args: Seq[String]) extends ScallopConf(args) {
   version("Avalanche, %s b%s (%3$td.%3$tm.%3$tY %3$tH:%3$tM). Built with Scala %4$s" format (
-    BuildInfo.version, 
-    BuildInfo.buildinfoBuildnumber, 
+    BuildInfo.version,
+    BuildInfo.buildinfoBuildnumber,
     new java.util.Date(BuildInfo.buildTime),
     BuildInfo.scalaVersion))
   banner("""Small and simple make utility clone, that uses plain Scala files for build definitions.
            |Usage:
            |  av [OPTION]... [TASK]...
            |""".stripMargin)
-           
+
   val buildFile = opt[String]("build-file", descr = "use the given file instead of default av.scala")
   val supressedTasks = opt[List[String]]("supress", short = 'S', descr = "tasks to be supressed")
   val tasksToRun = opt[List[String]]("tasks", descr = "tasks to run")
@@ -39,7 +39,7 @@ class Opts(args: Seq[String]) extends ScallopConf(args) {
   lazy val forcedTaskDeps = forcedTasks().map(Utils.TaskDepParser.apply)
   def isForced(td: TaskDep) =
     forcedTaskDeps.find(_._1 == td.task.name).find(_._2.filterNot(_ == td.args).isEmpty).isDefined
-  
+
   def isQuiet = quiet() || silent()
   def isSilent = silent()
   def isVerbose = verbose() && ! silent() && ! quiet()

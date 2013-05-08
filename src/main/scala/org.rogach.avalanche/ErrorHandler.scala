@@ -37,7 +37,7 @@ object ErrorHandler extends PartialFunction[Throwable,Unit] {
           printError("Exception thrown in definition of task '%s':" format td)
           ex.printStackTrace
       }
-    case a => 
+    case a =>
       printError("Internal exception, please file bug report!")
       a.printStackTrace
   }

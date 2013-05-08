@@ -2,7 +2,7 @@ package org.rogach.avalanche
 
 class GraphTest extends UsefulTest {
   val testGraph = Graph(
-    nodes = ('a' to 'h').toList, 
+    nodes = ('a' to 'h').toList,
     edges = List('a'->'d', 'a'->'e', 'b'->'d', 'c'->'e', 'c'->'h', 'd'->'f', 'd'->'g', 'd'->'h', 'e'->'g')
   )
 
@@ -18,5 +18,5 @@ class GraphTest extends UsefulTest {
   test("graph with single element") {
     Graph(List("a"), Nil).depthFirstSearch("a"!=) ==== Nil
   }
-  
+
 }

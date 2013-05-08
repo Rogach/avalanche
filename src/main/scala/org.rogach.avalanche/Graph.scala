@@ -12,7 +12,7 @@ case class Graph[T](nodes:List[T], edges:List[(T,T)]) {
   }
   def remove(edge:(T,T)) = new Graph(nodes, edges.filter(edge !=))
 
-  /** returns a list of nodes and their children, selected in depth-first order. 
+  /** returns a list of nodes and their children, selected in depth-first order.
    *  @param select Function, that specifies if search should include this node and descend into its children.
    *                Note, that if the node is not selected, it can still be returned as child of other node!
    */
@@ -59,9 +59,9 @@ case class Graph[T](nodes:List[T], edges:List[(T,T)]) {
     if (tgraph.edges.size > 0) {
       // return error (graph has at least one cycle)
       throw new Exception("Graph has at least one cycle")
-    // else 
+    // else
     } else {
-      // return L (a topologically sorted order)  
+      // return L (a topologically sorted order)
       return l
     }
   }
