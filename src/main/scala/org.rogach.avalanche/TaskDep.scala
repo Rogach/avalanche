@@ -7,8 +7,8 @@ case class TaskDep(task: Task, args: List[String]) {
   def getDeps = try { task.deps(args) } catch { case e => throw new TaskSpecException(this, e) }
   def getReRun = try { task.rerun(args) } catch { case e => throw new TaskSpecException(this, e) }
   def run = {
-    val needReRun = getReRun
     verbose("Starting task '%s', on %s" format (this.toString, now))
+    val needReRun = getReRun
     if ((needReRun || Avalanche.opts.isForced(this) || Avalanche.opts.allForced()) && !Avalanche.opts.isSupressed(this)) {
       if (task.body != BuildImports.NoBody && Avalanche.opts.dryRun()) {
         success("task '%s'" format this.toString)
