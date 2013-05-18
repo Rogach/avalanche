@@ -13,17 +13,21 @@ object BuildImports {
   def task(name: String, inputs: List[String] => Seq[File], outputs: List[String] => Seq[File], deps: List[String] => Seq[TaskDep] = _ => Nil, body: List[String] => Unit): Task =
     task(name,
       rerun = { args =>
-        def reportFiles(msg: String, fs: Seq[File]) = if (Avalanche.opts.isVerbose) {
+        def reportFiles(msg: String, fs: Seq[File], ln: Int) = if (Avalanche.opts.isVerbose) {
           fs.foreach { f =>
             if (f.exists) {
-              printf("%-6s: %-50s | %3$tF %3$tT\n", msg, f, f.lastModified)
+              printf("%-6s: %-"+ln+"s | %3$tF %3$tT\n", msg, f, f.lastModified)
             } else {
-              printf("%-6s: %-50s | not found\n", msg, f)
+              printf("%-6s: %-"+ln+"s | not found\n", msg, f)
             }
           }
         }
-        reportFiles("input", inputs(args))
-        reportFiles("output", outputs(args))
+        val ln = {
+          val fs = inputs(args) ++ outputs(args)
+          if (fs.size > 0) fs.map(_.toString.size).max else 0
+        }
+        reportFiles("input", inputs(args), ln)
+        reportFiles("output", outputs(args), ln)
 
         val inputsModify = inputs(args).map(f =>
           if (f.exists) Some(f.lastModified)
