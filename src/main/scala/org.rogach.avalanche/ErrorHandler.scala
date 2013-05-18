@@ -17,6 +17,9 @@ object ErrorHandler extends PartialFunction[Throwable,Unit] {
       printError("Build file not found: %s" format fname)
     case TaskNotFound(name) =>
       printError("Task not found: '%s'" format name)
+    case NonZeroExitCode(Some(TaskDep(task, args)), code) =>
+      printError("Task failed: %s[%s] (non-zero exit code: %d)" format
+        (task.name, args.mkString(","), code))
     case TaskFailed(name, args, e) =>
       printError("Task failed: %s[%s]" format (name, args.mkString(",")))
       if (!Avalanche.opts.isSilent)
@@ -39,6 +42,7 @@ object ErrorHandler extends PartialFunction[Throwable,Unit] {
       }
     case a =>
       printError("Internal exception, please file bug report!")
+      println(a)
       a.printStackTrace
   }
 }

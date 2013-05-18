@@ -81,12 +81,12 @@ object BuildImports {
   def exec(f: String, env: Map[String,Any]): Unit = {
     val out = avalanche.logOutput.value
     val exitCode = Process(f, None, env.mapValues(_.toString).toSeq:_*).!(ProcessLogger(out.println, out.println))
-    if (exitCode != 0) sys.error("Non-zero exit code from script: '%s'" format f)
+    if (exitCode != 0) throw NonZeroExitCode(None, exitCode)
   }
   def exec(pb: ProcessBuilder): Unit = {
     val out = avalanche.logOutput.value
     val exitCode = pb.!(ProcessLogger(out.println, out.println))
-    if (exitCode != 0) sys.error("Non-zero exit code from process!")
+    if (exitCode != 0) throw NonZeroExitCode(None, exitCode)
   }
 
   /** helper, that is used to run task only once in a build, for each set of arguments. Useful in testing.

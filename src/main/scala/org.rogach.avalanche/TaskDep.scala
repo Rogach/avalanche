@@ -26,9 +26,11 @@ case class TaskDep(task: Task, args: List[String]) {
           } else {
             task.body(args)
           }
-        } catch { case e =>
-          error("Exception from task (%s)" format e.getMessage)
-          throw new TaskFailed(task.name, args, e)
+        } catch {
+          case NonZeroExitCode(None, code) => throw NonZeroExitCode(Some(this), code)
+          case e =>
+            error("Exception from task (%s)" format e.getMessage)
+            throw new TaskFailed(task.name, args, e)
         }
 
         // check that the task successfully ended
