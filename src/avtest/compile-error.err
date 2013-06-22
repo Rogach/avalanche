@@ -1,0 +1,15 @@
+org.rogach.avalanche.CompilationFailedException: 
+line 1: type mismatch;
+ found   : Int(1)
+ required: String 
+    val s: String = 1
+                    ^
+line 3: type mismatch;
+ found   : String("eu")
+ required: Double 
+    val d: Double = "eu"
+                    ^
+	at org.rogach.avalanche.Compiler.compile(BuildCompiler.scala:75)
+	at org.rogach.avalanche.BuildCompiler$.compile(BuildCompiler.scala:10)
+	at org.rogach.avalanche.Avalanche$.main(Avalanche.scala:45)
+	at org.rogach.avalanche.Avalanche.main(Avalanche.scala)

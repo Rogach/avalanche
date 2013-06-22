@@ -1,7 +1,6 @@
 onInit {
   println("init")
 }
-createDirs("target/a", "target/b")
 val default = aggregate("default", List(second("a"), third))
 val second = task("second",
   rerun = once,
@@ -11,4 +10,3 @@ val third = task("third",
   rerun = once,
   deps = _ => second("a"),
   body = a => println("Third task, with params: %s" format a.mkString(", ")))
-  

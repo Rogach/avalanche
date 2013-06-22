@@ -17,7 +17,10 @@ object BuildCompiler {
       )
       classes.head.newInstance
       val endTime = System.currentTimeMillis
-      success("Compiled build file, time elapsed: %d s" format (endTime - startTime)/1000)
+      if (Avalanche.opts.noTimings())
+        success("Compiled build file")
+      else
+        success("Compiled build file, time elapsed: %d s" format (endTime - startTime)/1000)
     } catch { case e: Throwable =>
       error("Failed to compile build file '%s'" format file)
       e.printStackTrace

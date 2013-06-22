@@ -9,7 +9,8 @@ object ErrorHandler extends PartialFunction[Throwable,Unit] {
     if (Avalanche.opts == null || Avalanche.opts.parallel() == 1 ) {
       // in parallel execution, those messages are printed in Run.parallel
       error("BUILD FAILED")
-      error("Total time: %d s, completed %s" format ((System.currentTimeMillis - Avalanche.startTime) / 1000, now))
+      if (!Avalanche.opts.noTimings())
+        error("Total time: %d s, completed %s" format ((System.currentTimeMillis - Avalanche.startTime) / 1000, now))
     }
   }
   def apply(e:Throwable) = e match {

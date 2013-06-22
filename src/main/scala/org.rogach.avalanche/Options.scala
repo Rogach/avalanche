@@ -27,6 +27,7 @@ class Opts(args: Seq[String]) extends ScallopConf(args) {
   private val silent = opt[Boolean]("silent", descr = "supress all output, including output from scripts (stderr from scripts is still printed)")
   private val verbose = opt[Boolean]("verbose", descr = "print more information")
   val tasks = trailArg[List[String]]("tasks to run", descr = "tasks to run", required = false, default = Some(Nil))
+  val noTimings = opt[Boolean](hidden = true)
 
   lazy val supressedTaskDeps = supressedTasks().map(Utils.TaskDepParser.apply)
   def isSupressed(td: TaskDep) =

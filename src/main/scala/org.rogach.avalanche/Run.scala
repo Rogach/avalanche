@@ -84,7 +84,8 @@ package parallel {
 
               Avalanche.finished = true
               error("BUILD FAILED")
-              error("Total time: %d s, completed %s" format ((System.currentTimeMillis - Avalanche.startTime) / 1000, now))
+              if (!Avalanche.opts.noTimings())
+                error("Total time: %d s, completed %s" format ((System.currentTimeMillis - Avalanche.startTime) / 1000, now))
               sys.exit(1)
             }
           }

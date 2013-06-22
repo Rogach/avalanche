@@ -18,7 +18,10 @@ case class TaskDep(task: Task, args: List[String]) {
         }
         if (!Avalanche.opts.dryRun()) {
           if (task.body != BuildImports.NoBody) {
-            success("Started task '%s', on %s" format (this.toString, now))
+            if (Avalanche.opts.noTimings())
+              success("Started task '%s'")
+            else
+              success("Started task '%s', on %s" format (this.toString, now))
           }
           val startTime = System.currentTimeMillis
           try {
@@ -40,7 +43,12 @@ case class TaskDep(task: Task, args: List[String]) {
           if (getReRun) throw new TaskNotCompleted(task.name, args)
 
           val endTime = System.currentTimeMillis
-          if (task.body != BuildImports.NoBody) success("Ended task '%s', total time: %d s, completed on %s" format (this.toString, (endTime - startTime)/1000, now))
+          if (task.body != BuildImports.NoBody)
+            if (Avalanche.opts.noTimings())
+              success("Ended task '%s'" format this)
+            else
+              success("Ended task '%s', total time: %d s, completed on %s" format
+                (this, (endTime - startTime)/1000, now))
         }
       } else {
         // everything's fine, we can rest

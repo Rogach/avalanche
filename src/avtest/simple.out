@@ -1,0 +1,18 @@
+[avalanche] Starting avalanche...
+[avalanche] Compiled build file
+init
+[avalanche] Started task '%s'
+Second task, with params: a
+[avalanche] Ended task 'second[a]'
+[avalanche] Started task '%s'
+Third task, with params: 
+[avalanche] Ended task 'third'
+
+  ██████  ██    ██   █████    █████   ██████  ██████  ██████
+  ██      ██    ██  ██   ██  ██   ██  ██      ██      ██
+  ██      ██    ██  ██       ██       ██      ██      ██
+  ██████  ██    ██  ██       ██       ██████  ██████  ██████
+      ██  ██    ██  ██       ██       ██          ██      ██
+      ██  ██    ██  ██   ██  ██   ██  ██          ██      ██
+  ██████   ██████    █████    █████   ██████  ██████  ██████
+
