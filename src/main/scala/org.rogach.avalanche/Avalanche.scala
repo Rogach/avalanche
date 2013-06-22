@@ -2,7 +2,6 @@ package org.rogach.avalanche
 
 import java.io.File
 import avalanche._
-import org.rogach.Prelude._
 
 object Avalanche {
   val startTime = System.currentTimeMillis
@@ -23,7 +22,9 @@ object Avalanche {
       }
       if (!opts.ignoreLock()) {
         lock.createNewFile
-        lock.printHere(_.println(java.lang.management.ManagementFactory.getRuntimeMXBean.getName))
+        val lockOut = new java.io.PrintWriter(lock)
+        lockOut.println(java.lang.management.ManagementFactory.getRuntimeMXBean.getName)
+        lockOut.close
       }
 
       if (opts.splitLogs()) {

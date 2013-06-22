@@ -3,7 +3,7 @@ package org.rogach.avalanche
 class GraphTest extends UsefulTest {
   val testGraph = Graph(
     nodes = ('a' to 'h').toList,
-    edges = List('a'->'d', 'a'->'e', 'b'->'d', 'c'->'e', 'c'->'h', 'd'->'f', 'd'->'g', 'd'->'h', 'e'->'g')
+    edges = List(('a','d'), ('a','e'), ('b','d'), ('c','e'), ('c','h'), ('d','f'), ('d','g'), ('d','h'), ('e','g'))
   )
 
   test("topological sort") {

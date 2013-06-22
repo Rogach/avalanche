@@ -4,8 +4,10 @@ import avalanche._
 import java.util.Date
 
 case class TaskDep(task: Task, args: List[String]) {
-  def getDeps = try { task.deps(args) } catch { case e => throw new TaskSpecException(this, e) }
-  def getReRun = try { task.rerun(args) } catch { case e => throw new TaskSpecException(this, e) }
+  def getDeps =
+    try { task.deps(args) } catch { case e:Throwable => throw new TaskSpecException(this, e) }
+  def getReRun =
+    try { task.rerun(args) } catch { case e:Throwable => throw new TaskSpecException(this, e) }
   def run = {
     verbose("Starting task '%s', on %s" format (this.toString, now))
     if (!Avalanche.opts.isSupressed(this)) {
@@ -29,7 +31,7 @@ case class TaskDep(task: Task, args: List[String]) {
             }
           } catch {
             case NonZeroExitCode(None, code) => throw NonZeroExitCode(Some(this), code)
-            case e =>
+            case e:Throwable =>
               error("Exception from task (%s)" format e.getMessage)
               throw new TaskFailed(task.name, args, e)
           }

@@ -18,7 +18,7 @@ object BuildCompiler {
       classes.head.newInstance
       val endTime = System.currentTimeMillis
       success("Compiled build file, time elapsed: %d s" format (endTime - startTime)/1000)
-    } catch { case e =>
+    } catch { case e: Throwable =>
       error("Failed to compile build file '%s'" format file)
       e.printStackTrace
       Avalanche.finished = true
@@ -43,6 +43,7 @@ import tools.nsc.io._
 import tools.nsc.reporters.StoreReporter
 import tools.nsc.interpreter.AbstractFileClassLoader
 import tools.nsc.util._
+import reflect.internal.util.BatchSourceFile
 
 class Compiler {
 
