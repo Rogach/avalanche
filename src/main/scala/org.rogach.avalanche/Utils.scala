@@ -14,6 +14,10 @@ object Utils {
         println(msg)
         println(rest)
         throw new TaskDepParseException(s)
+      case Error(msg, rest) =>
+        println(msg)
+        println(rest)
+        throw new TaskDepParseException(s)
     }
   }
 

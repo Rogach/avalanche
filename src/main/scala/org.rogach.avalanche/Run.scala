@@ -110,7 +110,7 @@ package parallel {
         val res = try {
           td.run
           TaskSuccess(td)
-        } catch { case e => TaskFailed(td, e) }
+        } catch { case e:Throwable => TaskFailed(td, e) }
         sender ! res
         self ! PoisonPill
     }
