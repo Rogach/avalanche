@@ -1,7 +1,5 @@
 import org.scalatest._
 import java.io.File
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.filefilter.TrueFileFilter
 import sbt.{IO, PathFinder, file}
 import sbt.FileFilter._
 import java.io._
