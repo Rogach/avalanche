@@ -52,7 +52,8 @@ object Avalanche {
         sys.exit(1)
       }
 
-      init.foreach(_())
+      if (!opts.dryRun())
+        init.foreach(_())
 
       // create a "root" task, that would trigger the build
       val rootTask = new Task(
