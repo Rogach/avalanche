@@ -81,17 +81,15 @@ object BuildImports {
 
   def f(s: String): File = new File(s)
 
-  def exec(f: String): Unit = exec(f, Map())
-  def exec(f: String, env: Map[String,Any]): Unit = {
-    val out = avalanche.logOutput.value
-    val exitCode = Process(f, None, env.mapValues(_.toString).toSeq:_*).!(ProcessLogger(out.println, out.println))
-    if (exitCode != 0) throw NonZeroExitCode(None, exitCode)
-  }
   def exec(pb: ProcessBuilder): Unit = {
     val out = avalanche.logOutput.value
     val exitCode = pb.!(ProcessLogger(out.println, out.println))
     if (exitCode != 0) throw NonZeroExitCode(None, exitCode)
   }
+  def exec(f: String): Unit = exec(f, Map[String,Any]())
+  def exec(f: String, env: Map[String,Any]): Unit = exec(Process(f, None, env.mapValues(_.toString).toSeq:_*))
+  def exec(cmd: Seq[String]): Unit = exec(cmd, Map[String,Any]())
+  def exec(cmd: Seq[String], env: Map[String,Any]): Unit = exec(Process(cmd, None, env.mapValues(_.toString).toSeq:_*))
 
   /** helper, that is used to run task only once in a build, for each set of arguments. Useful in testing.
    *  Usage:
