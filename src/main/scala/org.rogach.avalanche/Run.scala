@@ -4,27 +4,17 @@ import akka.actor.{Actor, Props, ActorSystem, PoisonPill}
 import avalanche._
 
 class Run(tasks: Graph[TaskDep]) {
+
   def start = {
-    if (Avalanche.opts.parallel() <= 1)
-      runSerial
-    else runParallel
-  }
-
-  def runSerial = {
-    tasks.topologicalSort.reverse.dropRight(1).foreach(_.run)
-  }
-
-  def runParallel = {
-    import parallel._;
     val system = ActorSystem("AvalancheParallelRunners")
-    val master = system.actorOf(Props(new Master(tasks)))
-    master ! Next
+    val master = system.actorOf(Props(new run.Master(tasks)))
+    master ! run.Next
     system.awaitTermination
   }
 
 }
 
-package parallel {
+package run {
   // actor messages
   case object Start
   case object Next // try to run next task
@@ -60,32 +50,34 @@ package parallel {
     def receive = {
       case Next =>
         next map { n =>
-          if (n.task.threads <= threads) {
+          if (n.task.threads <= threads || threads == Avalanche.opts.parallel()) {
             context.actorOf(Props[Runner]) ! StartTask(n)
             threads -= n.task.threads
             status(n) = Started
-            // there may be more free processors left, try starting newone
-            next.map { n =>
+            // there may be more free processors left, try starting new one
+            next.foreach { n =>
               if (n.task.threads <= threads) {
                 self ! Next
               }
             }
-          } else if (n.task.threads > Avalanche.opts.parallel()) {
-            threads -= n.task.threads
-            self ! TaskFailed(n, new VeryThreadyTask(n))
           }
         } getOrElse {
           // check that there are no tasks executing
           if (threads == Avalanche.opts.parallel()) {
             context.system.shutdown
             exceptions.headOption.foreach { _ =>
-              error("There were errors during parallel execution:")
-              exceptions.map(_._2).foreach(ErrorHandler)
+              error("There were errors during parallel execution of tasks:")
+              exceptions.map(_._1).foreach { td =>
+                error(s"  $td")
+              }
 
               Avalanche.finished = true
               error("BUILD FAILED")
               if (!Avalanche.opts.noTimings())
-                error("Total time: %d s, completed %s" format ((System.currentTimeMillis - Avalanche.startTime) / 1000, now))
+                error("Total time: %d s, completed %s" format (
+                  (System.currentTimeMillis - Avalanche.startTime) / 1000,
+                  now)
+                )
               sys.exit(1)
             }
           }
@@ -98,6 +90,7 @@ package parallel {
         status(t) = Failed
         threads += t.task.threads
         exceptions += (t -> ex)
+        ErrorHandler.apply(ex)
         self ! Next
     }
   }

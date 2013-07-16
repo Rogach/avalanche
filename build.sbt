@@ -28,7 +28,7 @@ libraryDependencies <++= scalaVersion (sv => Seq(
   "org.scala-lang" % "scala-compiler" % sv,
   "commons-io" % "commons-io" % "2.4",
   "org.scalatest" %% "scalatest" % "1.9.1" % "test",
-  "com.typesafe.akka" %% "akka-actor" % "2.1.4"
+  "com.typesafe.akka" %% "akka-actor" % "2.2.0"
 ))
 
 resolvers ++= Seq(
