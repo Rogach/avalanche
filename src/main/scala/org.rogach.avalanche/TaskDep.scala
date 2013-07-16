@@ -33,14 +33,19 @@ case class TaskDep(task: Task, args: List[String]) {
               task.body(args)
             }
           } catch {
-            case NonZeroExitCode(None, code) => throw NonZeroExitCode(Some(this), code)
+            case NonZeroExitCode(None, code) =>
+              error(s"Non-zero exit code ($code) from task '$this'")
+              throw NonZeroExitCode(Some(this), code)
             case e:Throwable =>
-              error("Exception from task (%s)" format e.getMessage)
+              error(s"Exception from task '$this' (${e.getMessage})")
               throw new TaskFailed(task.name, args, e)
           }
 
           // check that the task successfully ended
-          if (getReRun) throw new TaskNotCompleted(task.name, args)
+          if (getReRun) {
+            error(s"Failed to complete the task '$this' - after running the task, rerun is still needed.")
+            throw new TaskNotCompleted(task.name, args)
+          }
 
           val endTime = System.currentTimeMillis
           if (task.body != BuildImports.NoBody)
