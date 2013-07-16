@@ -19,7 +19,7 @@ object ErrorHandler extends PartialFunction[Throwable,Unit] {
       error(s"Failed to parse task dep: '$s'")
     case InputFileNotFound(file, taskName, args) =>
       error(s"Failed to find input file '$file' for task $taskName[${args.mkString(",")}]")
-    case TaskNotCompleted(td, args) =>
+    case TaskNotCompleted(td) =>
       error(s"Failed to complete the task $td - after running the task, rerun is still needed.")
     case TaskSpecException(td, ex) =>
       ex match {

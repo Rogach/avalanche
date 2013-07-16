@@ -38,7 +38,7 @@ case class TaskDep(task: Task, args: List[String]) {
           }
 
           // check that the task successfully ended
-          if (getReRun) throw new TaskNotCompleted(task.name, args)
+          if (getReRun) throw new TaskNotCompleted(this)
 
           val endTime = System.currentTimeMillis
           if (task.body != BuildImports.NoBody)
