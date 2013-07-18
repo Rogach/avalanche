@@ -8,12 +8,10 @@ object BuildCompiler {
     try {
       val c = new Compiler
       val classes = c.compile(
-        """
-        |import org.rogach.avalanche.BuildImports._
-        |class Build {
-        |%s
-        |}
-        |""".stripMargin format io.Source.fromFile(file).getLines.mkString("\n")
+        // putting everything on one line allows me to get proper line numbers
+        // in case of runtime errors
+        "import org.rogach.avalanche.BuildImports._; class Build { %s\n}"
+        format io.Source.fromFile(file).getLines.mkString("\n")
       )
       classes.head.newInstance
       val endTime = System.currentTimeMillis
@@ -101,8 +99,18 @@ class Compiler {
    It contains program was compiling and error positions with messages
    of what went wrong during compilation.
   */
-class CompilationFailedException(val programme: String,
-                                  val messages: Iterable[CompileError])
-   extends Exception("\n" + messages.map(m => "line %d: %s \n    %s\n    %s" format (m.line - 3, m.message, m.lineContent, " " * (m.column - 1) + "^")).mkString("\n"))
+class CompilationFailedException(
+  val programme: String,
+  val messages: Iterable[CompileError]
+) extends Exception(
+  "\n" + messages.map(m =>
+    "line %d: %s \n    %s\n    %s" format (
+      m.line,
+      m.message,
+      if (m.line != 1) m.lineContent else m.lineContent.drop(58),
+      " " * (if (m.line != 1) m.column - 1 else m.column - 59) + "^"
+    )
+  ).mkString("\n")
+)
 
 case class CompileError(line: Int, column: Int, lineContent: String, message: String)
