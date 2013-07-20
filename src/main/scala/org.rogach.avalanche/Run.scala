@@ -33,33 +33,19 @@ package run {
     val exceptions = collection.mutable.ListBuffer[(TaskDep, Throwable)]()
     var threads = Avalanche.opts.parallel()
 
-    @annotation.tailrec
-    private def next: Option[TaskDep] = {
-      val n = tasks.depthFirstSearch(t => status(t) == Pending)
-              .find{ case (task, deps) => deps.forall(d => status(d) == Completed || status(d) == Failed)}
-      n match {
-        case None => None // no more tasks to execute
-        case Some((t, deps)) =>
-          if (deps.exists(d => status(d) == Failed)) {
-            status(t) = Failed
-            next
-          } else Some(t)
-      }
-    }
+    private def nextTasks: List[TaskDep] =
+      tasks.depthFirstSearch(t => status(t) == Pending)
+      .filter { case (task, deps) => deps.forall(d => status(d) == Completed) }
 
     def receive = {
       case Next =>
-        next map { n =>
+        nextTasks.sortBy(_.task.threads).headOption map { n =>
           if (n.task.threads <= threads || threads == Avalanche.opts.parallel()) {
             context.actorOf(Props[Runner]) ! StartTask(n)
             threads -= n.task.threads
             status(n) = Started
-            // there may be more free processors left, try starting new one
-            next.foreach { n =>
-              if (n.task.threads <= threads) {
-                self ! Next
-              }
-            }
+            // there may be more free threads left, try starting new task
+            self ! Next
           }
         } getOrElse {
           // check that there are no tasks executing
