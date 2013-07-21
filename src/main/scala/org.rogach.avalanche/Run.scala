@@ -35,7 +35,7 @@ package run {
 
     private def nextTasks: List[TaskDep] =
       tasks.depthFirstSearch(t => status(t) == Pending)
-      .filter { case (task, deps) => deps.forall(d => status(d) == Completed) }
+      .collect { case (task, deps) if deps.forall(d => status(d) == Completed) => task }
 
     def receive = {
       case Next =>
