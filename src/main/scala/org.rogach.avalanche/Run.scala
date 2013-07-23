@@ -39,7 +39,7 @@ package run {
 
     def receive = {
       case Next =>
-        nextTasks.sortBy(_.task.threads).headOption map { n =>
+        nextTasks.sortBy(_.task.threads).reverse.headOption map { n =>
           if (n.task.threads <= threads || threads == Avalanche.opts.parallel()) {
             context.actorOf(Props[Runner]) ! StartTask(n)
             threads -= n.task.threads
