@@ -28,10 +28,8 @@ object Avalanche {
       }
 
       if (opts.splitLogs()) {
-        // create directory for logs
-        val logs = new File("logs")
-        if (logs.exists) org.apache.commons.io.FileUtils.deleteDirectory(logs)
-        logs mkdirs
+        // ensure directory for logs exists
+        new File("logs") mkdirs
       }
 
       success("Starting avalanche...") // needed to eagerly initialize package object with logging logic
