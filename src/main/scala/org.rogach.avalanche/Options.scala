@@ -14,7 +14,7 @@ class Opts(args: Seq[String]) extends ScallopConf(args) {
            |""".stripMargin)
 
   val buildFile = opt[String]("build-file", descr = "use the given file instead of default av.scala")
-  val supressedTasks = opt[List[String]]("supress", short = 'S', descr = "tasks to be supressed", default = Some(Nil))
+  val suppressedTasks = opt[List[String]]("suppress", short = 'S', descr = "tasks to be suppressed", default = Some(Nil))
   val tasksToRun = opt[List[String]]("tasks", descr = "tasks to run", default = Some(Nil))
   val forcedTasks = opt[List[String]]("force", descr = "force several tasks to re-build (with parameters)", argName = "tasks", default = Some(Nil))
   val allForced = opt[Boolean]("force-all", short = 'F', descr = "force all depended tasks to be rebuilded")
@@ -23,15 +23,15 @@ class Opts(args: Seq[String]) extends ScallopConf(args) {
   val splitLogs = opt[Boolean]("split-logs", short = 'W', descr = "if set, then separate directory 'logs' is created, and log file for each task is created.")
   val ignoreLock = opt[Boolean]("ignore-lock", descr = "ignore lock, that stops current build if other build process is running")
   val parallel = opt[Int]("parallel", short = 'P', descr = "controls the maximum amount of parallel tasks (threads) executing (see Task.threads). Defaults to serial execution", default = Some(1))
-  private val quiet = opt[Boolean]("quiet", descr = "supress avalanche output")
-  private val silent = opt[Boolean]("silent", descr = "supress all output, including output from scripts (stderr from scripts is still printed)")
+  private val quiet = opt[Boolean]("quiet", descr = "suppress avalanche output")
+  private val silent = opt[Boolean]("silent", descr = "suppress all output, including output from scripts (stderr from scripts is still printed)")
   private val verbose = opt[Boolean]("verbose", descr = "print more information")
   val tasks = trailArg[List[String]]("tasks to run", descr = "tasks to run", required = false, default = Some(Nil))
   val noTimings = opt[Boolean](hidden = true)
 
-  lazy val supressedTaskDeps = supressedTasks().map(Utils.TaskDepParser.apply)
-  def isSupressed(td: TaskDep) =
-    supressedTaskDeps.find(_._1 == td.task.name).find(_._2.filterNot(_ == td.args).isEmpty).isDefined
+  lazy val suppressedTaskDeps = suppressedTasks().map(Utils.TaskDepParser.apply)
+  def isSuppressed(td: TaskDep) =
+    suppressedTaskDeps.find(_._1 == td.task.name).find(_._2.filterNot(_ == td.args).isEmpty).isDefined
 
   def requestedTasks:List[String] =
     (tasksToRun() ::: forcedTasks() ::: tasks()).distinct

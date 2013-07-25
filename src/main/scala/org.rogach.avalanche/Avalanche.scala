@@ -50,6 +50,11 @@ object Avalanche {
         sys.exit(1)
       }
 
+      // ensure that task names in options are parsed
+      // and errors are thrown when needed
+      opts.suppressedTaskDeps
+      opts.forcedTaskDeps
+
       if (!opts.dryRun())
         init.foreach(_())
 

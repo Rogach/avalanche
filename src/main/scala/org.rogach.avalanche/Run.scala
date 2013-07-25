@@ -49,7 +49,7 @@ package run {
             } else {
               try {
                 verbose(s"Trying task '$t', on ${now}")
-                if (!Avalanche.opts.isSupressed(t)) {
+                if (!Avalanche.opts.isSuppressed(t)) {
                   val needsReRun =
                     t.getReRun || Avalanche.opts.isForced(t) || Avalanche.opts.allForced()
                   if (Avalanche.opts.dryRun()) {
