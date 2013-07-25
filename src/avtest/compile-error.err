@@ -9,7 +9,7 @@ line 3: type mismatch;
  required: Double 
     val d: Double = "eu"
                     ^
-	at org.rogach.avalanche.Compiler.compile(BuildCompiler.scala:75)
+	at org.rogach.avalanche.Compiler.compile(BuildCompiler.scala:73)
 	at org.rogach.avalanche.BuildCompiler$.compile(BuildCompiler.scala:10)
-	at org.rogach.avalanche.Avalanche$.main(Avalanche.scala:45)
+	at org.rogach.avalanche.Avalanche$.main(Avalanche.scala:43)
 	at org.rogach.avalanche.Avalanche.main(Avalanche.scala)

@@ -12,6 +12,10 @@ case class Graph[T](nodes:List[T], edges:List[(T,T)]) {
   }
   def remove(edge:(T,T)) = new Graph(nodes, edges.filter(edge !=))
 
+  /** Get neighbours close to this node */
+  def neighbours(node: T): List[T] =
+    edges.filter(_._1 == node).map(_._2)
+
   /** returns a list of nodes and their children, selected in depth-first order.
    *  @param select Function, that specifies if search should include this node and descend into its children.
    *                Note, that if the node is not selected, it can still be returned as child of other node!

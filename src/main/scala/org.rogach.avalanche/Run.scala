@@ -27,6 +27,7 @@ package run {
   case object Started extends TaskState
   case object Completed extends TaskState
   case object Failed extends TaskState
+  case object Cached extends TaskState
 
   class Master(tasks: Graph[TaskDep]) extends Actor {
     val status = collection.mutable.Map[TaskDep, TaskState]((tasks.nodes.map(_ -> Pending)):_*)
@@ -35,15 +36,51 @@ package run {
 
     private def nextTasks: List[TaskDep] =
       tasks.depthFirstSearch(t => status(t) == Pending)
-      .collect { case (task, deps) if deps.forall(d => status(d) == Completed) => task }
+      .collect {
+        case (task, deps) if deps.forall(d => status(d) == Completed || status(d) == Cached) => task
+      }
 
     def receive = {
       case Next =>
-        nextTasks.sortBy(_.task.threads).reverse.headOption map { n =>
-          if (n.task.threads <= threads || threads == Avalanche.opts.parallel()) {
-            context.actorOf(Props[Runner]) ! StartTask(n)
-            threads -= n.task.threads
-            status(n) = Started
+        nextTasks.sortBy(_.task.threads).reverse.headOption map { t =>
+          if (t.task.threads <= threads || threads == Avalanche.opts.parallel()) {
+            if (t.task.name == "-avalanche-root-task" || t.task.body == BuildImports.NoBody) {
+              status(t) = Completed
+            } else {
+              try {
+                verbose(s"Trying task '$t', on ${now}")
+                if (!Avalanche.opts.isSupressed(t)) {
+                  val needsReRun =
+                    t.getReRun || Avalanche.opts.isForced(t) || Avalanche.opts.allForced()
+                  if (Avalanche.opts.dryRun()) {
+                    if (needsReRun || tasks.neighbours(t).exists(d => status(d) == Completed)) {
+                      success(s"task '$t'")
+                      status(t) = Completed
+                    } else {
+                      verbose("Not rebuilding")
+                      status(t) = Cached
+                    }
+                  } else {
+                    if (needsReRun) {
+                      context.actorOf(Props[Runner]) ! StartTask(t)
+                      threads -= t.task.threads
+                      status(t) = Started
+                    } else {
+                      verbose("Not rebuilding")
+                      status(t) = Cached
+                    }
+                  }
+                } else {
+                  verbose("Task suppressed")
+                  status(t) = Cached
+                }
+              } catch { case e:Throwable =>
+                status(t) = Failed
+                exceptions += (t -> e)
+                ErrorHandler.apply(e)
+              }
+            }
+
             // there may be more free threads left, try starting new task
             self ! Next
           }
