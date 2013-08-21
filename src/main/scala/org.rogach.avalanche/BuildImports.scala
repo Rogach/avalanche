@@ -10,6 +10,9 @@ object BuildImports {
     t
   }
 
+  private val fileModificationTimeCache = scala.collection.mutable.HashMap[File, Option[Long]]()
+  private def getFileModTime(f: File) = fileModificationTimeCache.getOrElseUpdate(f, if (f.exists) Some(f.lastModified) else None)
+
   def task(name: String, inputs: List[String] => Seq[File], outputs: List[String] => Seq[File], deps: List[String] => Seq[TaskDep] = _ => Nil, body: List[String] => Unit): Task =
     task(name,
       rerun = { args =>
@@ -30,16 +33,15 @@ object BuildImports {
         reportFiles("output", outputs(args), ln)
 
         val inputsModify = inputs(args).map(f =>
-          if (f.exists) Some(f.lastModified)
-          else {
+          getFileModTime(f).getOrElse {
             if (!Avalanche.opts.dryRun())
               throw new InputFileNotFound(f.toString, name, args)
-            Some(System.currentTimeMillis)
+            System.currentTimeMillis
           }
-        ).flatten
+        )
         val inputsModifyTime = if (inputsModify.isEmpty) System.currentTimeMillis else inputsModify.max
 
-        val outputsModify = outputs(args).map(_.lastModified)
+        val outputsModify = outputs(args).map(f => getFileModTime(f).getOrElse(0L))
         val outputsModifyTime = if (outputsModify.isEmpty) 0 else outputsModify.min
         inputsModifyTime > outputsModifyTime
       },
