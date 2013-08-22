@@ -2,21 +2,31 @@ package org.rogach.avalanche
 
 class GraphTest extends UsefulTest {
   val testGraph = Graph(
-    nodes = ('a' to 'h').toList,
-    edges = List(('a','d'), ('a','e'), ('b','d'), ('c','e'), ('c','h'), ('d','f'), ('d','g'), ('d','h'), ('e','g'))
+    Map(
+      ('a', Set('d','e')),
+      ('b', Set('d')),
+      ('c', Set('e','h')),
+      ('d', Set('f','g','h')),
+      ('e', Set('g'))
+    )
   )
 
-  test("topological sort") {
-    testGraph.topologicalSort ==== List('a','b','d','f','c','h','e','g')
-  }
   test("depth first traversal, with descending into all nodes") {
-    testGraph.depthFirstSearch() ==== List(('f',Nil), ('g',Nil), ('h',Nil), ('d',List('f', 'g', 'h')), ('e',List('g')), ('a',List('d', 'e')), ('b',List('d')), ('c',List('e', 'h')))
+    testGraph.depthFirstSearch() ==== List(
+      ('f',Set()), ('g',Set()), ('h',Set()),
+      ('d',Set('f', 'g', 'h')), ('e',Set('g')),
+      ('a',Set('d', 'e')), ('b',Set('d')),
+      ('c',Set('e', 'h'))
+    )
   }
   test("depth first traversal, excluding tree part") {
-    testGraph.depthFirstSearch('d'!=) ==== List(('g',Nil), ('e',List('g')), ('a',List('d', 'e')), ('b',List('d')), ('h',Nil), ('c',List('e', 'h')))
+    testGraph.depthFirstSearch('d'!=) ==== List(
+      ('g',Set()), ('e',Set('g')), ('a',Set('d', 'e')),
+      ('b',Set('d')), ('h',Set()), ('c',Set('e', 'h'))
+    )
   }
   test("graph with single element") {
-    Graph(List("a"), Nil).depthFirstSearch("a"!=) ==== Nil
+    Graph(Map("a" -> Set[String]())).depthFirstSearch("a"!=) ==== List()
   }
 
 }

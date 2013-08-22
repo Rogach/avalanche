@@ -6,24 +6,23 @@ import BuildImports._
 class ParallelRunTest extends UsefulTest {
   Avalanche.opts = new Opts(Seq("-P8"))
   test ("no tasks, instant exit") {
-    new Run(Graph(Nil, Nil)) start;
+    new Run(Graph()) start;
   }
   test ("Single task") {
-    val (out, err) = captureOutput {
+    val (_,_) = captureOutput {
       var c = false
       val a = new Task("a", once, nodeps, _ => c = true)
-      new Run(Graph(List(a), Nil)) start;
+      new Run(Graph(Map(a() -> Set()))) start;
       c ==== true
     }
   }
   test ("Two tasks") {
-    val (out, err) = captureOutput {
+    val (_,_) = captureOutput {
       var c = 0
       val b = new Task("b", once, nodeps, _ => c += 1)
       val a = new Task("a", once, _ => b, _ => c += 1)
-      new Run(Graph(List(a,b), List(a() -> b()))) start;
+      new Run(Graph(Map(a() -> Set(b())))) start;
       c ==== 2
     }
-
   }
 }

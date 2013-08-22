@@ -30,7 +30,7 @@ package run {
   case object Cached extends TaskState
 
   class Master(tasks: Graph[TaskDep]) extends Actor {
-    val status = collection.mutable.Map[TaskDep, TaskState]((tasks.nodes.map(_ -> Pending)):_*)
+    val status = collection.mutable.Map[TaskDep, TaskState]((tasks.nodes.map(_ -> Pending)).toSeq:_*)
     val exceptions = collection.mutable.ListBuffer[(TaskDep, Throwable)]()
     var threads = Avalanche.opts.parallel()
 

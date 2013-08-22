@@ -68,21 +68,19 @@ object Avalanche {
         body = _ => ())
       val rootDep = TaskDep(task = rootTask, args = Nil)
 
-      var tasksToRun = new Graph[TaskDep](Nil, Nil)
+      var tasksToRun = Graph[TaskDep]()
       // function to add task and its dependencies to the task graph, recursively
       def addDepsToGraph(t: TaskDep): Unit = {
         t.getDeps.foreach { td =>
-          if (tasksToRun.nodes.contains(td)) {
-            tasksToRun += (t -> td)
+          if (tasksToRun.map.keySet.contains(td)) {
+            tasksToRun = tasksToRun.addEdge(t, td)
             // deps of td were already added
           } else {
-            tasksToRun += (td)
-            tasksToRun += (t -> td)
+            tasksToRun = tasksToRun.addEdge(t, td)
             addDepsToGraph(td)
           }
         }
       }
-      tasksToRun += (rootDep)
       addDepsToGraph(rootDep)
 
       new Run(tasksToRun) start;
