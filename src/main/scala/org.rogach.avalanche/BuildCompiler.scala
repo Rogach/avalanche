@@ -1,30 +1,118 @@
 package org.rogach.avalanche
 
 import avalanche._
+import tools.nsc.{Global, Settings}
+import tools.nsc.io.VirtualDirectory
+import tools.nsc.reporters.StoreReporter
+import tools.nsc.interpreter.AbstractFileClassLoader
+import tools.nsc.util._
+import reflect.internal.util.BatchSourceFile
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.IOUtils
+import java.io.File
 
 object BuildCompiler {
   def compile(file: String) = {
-    val startTime = System.currentTimeMillis
-    try {
-      val c = new Compiler
-      val classes = c.compile(
-        // putting everything on one line allows me to get proper line numbers
-        // in case of runtime errors
-        "import org.rogach.avalanche.BuildImports._; class Build { %s\n}"
-        format io.Source.fromFile(file).getLines.mkString("\n")
+    // for caching, I assume that there are no packages in build file,
+    // thus there are no subdirectories in cache dir
+    val cacheDir = new File(".av")
+    val cachedFilesModTime: Long = {
+      // iterate all files in cache dir
+      if (cacheDir.exists && cacheDir.list.nonEmpty) {
+        cacheDir.listFiles.map(_.lastModified).min
+      } else 0L
+    }
+    val buildFilesModTime: Long = {
+      // build file & jar file
+      val jarFile = new File(
+        this.getClass.getResource("/"+this.getClass.getName.replace(".","/")+".class")
+        .toString.stripPrefix("jar:file:").takeWhile('!'!=)
       )
-      classes.head.newInstance
-      val endTime = System.currentTimeMillis
-      if (Avalanche.opts.noTimings())
-        success("Compiled build file")
-      else
-        success("Compiled build file, time elapsed: %d s" format (endTime - startTime)/1000)
+      math.max(
+        (new File(file)).lastModified,
+        jarFile.lastModified
+      )
+    }
+    val classesDir = if (!Avalanche.opts.noBuildCache() && cachedFilesModTime >= buildFilesModTime) {
+      // load cached build file
+      success("Using cached build classes.")
+      loadVirtualDir(cacheDir)
+    } else {
+      // re-compile build file
+      val startTime = System.currentTimeMillis
+      try {
+        val c = new Compiler
+        val classesDir = c.compile(
+          // putting everything on one line allows me to get proper line numbers
+          // in case of runtime errors
+          "import org.rogach.avalanche.BuildImports._; class Build { %s\n}"
+          format io.Source.fromFile(file).getLines.mkString("\n")
+        )
+
+        if (!Avalanche.opts.noBuildCache()) {
+          saveVirtualDir(classesDir, cacheDir)
+        }
+
+        val endTime = System.currentTimeMillis
+        if (Avalanche.opts.noTimings())
+          success("Compiled build file")
+        else
+          success("Compiled build file, time elapsed: %d s" format (endTime - startTime)/1000)
+        classesDir
+      } catch { case e: Throwable =>
+        error(s"Failed to compile build file '$file'")
+        e.printStackTrace
+        Avalanche.finished = true
+        sys.exit(1)
+      }
+    }
+    try {
+      loadClassesFromDir(classesDir).head.newInstance
     } catch { case e: Throwable =>
-      error("Failed to compile build file '%s'" format file)
+      error(s"Failed to run build file '$file'")
       e.printStackTrace
       Avalanche.finished = true
       sys.exit(1)
     }
+  }
+
+  def saveVirtualDir(v: VirtualDirectory, dir: File) {
+    dir.mkdirs
+    v.foreach { f =>
+      FileUtils.writeByteArrayToFile(new File(dir + "/" + f.name), f.toByteArray)
+    }
+  }
+
+  def loadVirtualDir(dir: File): VirtualDirectory = {
+    val v = new VirtualDirectory("(memory)", None)
+    dir.listFiles.foreach { f =>
+      val vf = v.fileNamed(f.getName)
+      val vfo = vf.output
+      val ifs = FileUtils.openInputStream(f)
+      IOUtils.copy(ifs, vfo)
+      ifs.close
+      vfo.close
+    }
+    v
+  }
+
+  def loadClassesFromDir(directory: VirtualDirectory): Iterable[Class[_]] = {
+     /*! Each time new `AbstractFileClassLoader` is created for loading classes
+       it gives an opportunity to treat same name classes loading well.
+      */
+     // Loading new compiled classes
+     val classLoader =  new AbstractFileClassLoader(directory, this.getClass.getClassLoader())
+
+     /*! When classes are loading inner classes are being skipped. */
+     for (classFile <- directory; if (!classFile.name.contains('$'))) yield {
+
+       /*! Each file name is being constructed from a path in the virtual directory. */
+       val path = classFile.path
+       val fullQualifiedName = path.substring(path.indexOf('/')+1,path.lastIndexOf('.')).replace("/",".")
+
+       /*! Loaded classes are collecting into a returning collection with `yield`. */
+       classLoader.loadClass(fullQualifiedName)
+     }
   }
 }
 
@@ -39,16 +127,9 @@ object BuildCompiler {
    It used a classpath of the environment that called the `Compiler` class.
   */
 
-import tools.nsc.{Global, Settings}
-import tools.nsc.io._
-import tools.nsc.reporters.StoreReporter
-import tools.nsc.interpreter.AbstractFileClassLoader
-import tools.nsc.util._
-import reflect.internal.util.BatchSourceFile
-
 class Compiler {
 
-   def compile(source: String): Iterable[Class[_]] = {
+   def compile(source: String): VirtualDirectory = {
 
      // prepare the code you want to compile
      val sources = List(new BatchSourceFile("<source>", source))
@@ -67,29 +148,21 @@ class Compiler {
      val compiler = new Global(settings, reporter)
      new compiler.Run()compileSources(sources)
 
-     /*! After the compilation if errors occured, `CompilationFailedException`
-         is being thrown with a detailed message. */
      if (reporter.hasErrors) {
-       throw new CompilationFailedException(source,
-         reporter.infos.map(info => CompileError(info.pos.line, info.pos.column, info.pos.lineContent, info.msg)).toList.sortBy(_.line))
+       throw new CompilationFailedException(
+         source,
+         reporter.infos.map(info =>
+           CompileError(
+             info.pos.line,
+             info.pos.column,
+             info.pos.lineContent,
+             info.msg
+           )
+         ).toList.sortBy(_.line)
+       )
      }
 
-     /*! Each time new `AbstractFileClassLoader` is created for loading classes
-       it gives an opportunity to treat same name classes loading well.
-      */
-     // Loading new compiled classes
-     val classLoader =  new AbstractFileClassLoader(directory, this.getClass.getClassLoader())
-
-     /*! When classes are loading inner classes are being skipped. */
-     for (classFile <- directory; if (!classFile.name.contains('$'))) yield {
-
-       /*! Each file name is being constructed from a path in the virtual directory. */
-       val path = classFile.path
-       val fullQualifiedName = path.substring(path.indexOf('/')+1,path.lastIndexOf('.')).replace("/",".")
-
-       /*! Loaded classes are collecting into a returning collection with `yield`. */
-       classLoader.loadClass(fullQualifiedName)
-     }
+     directory
    }
 }
 

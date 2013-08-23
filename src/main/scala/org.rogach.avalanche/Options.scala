@@ -14,6 +14,7 @@ class Opts(args: Seq[String]) extends ScallopConf(args) {
            |""".stripMargin)
 
   val buildFile = opt[String]("build-file", descr = "use the given file instead of default av.scala")
+  val noBuildCache = opt[Boolean](descr = "don't use build classes cache")
   val suppressedTasks = opt[List[String]]("suppress", short = 'S', descr = "tasks to be suppressed", default = Some(Nil))
   val tasksToRun = opt[List[String]]("tasks", descr = "tasks to run", default = Some(Nil))
   val forcedTasks = opt[List[String]]("force", descr = "force several tasks to re-build (with parameters)", argName = "tasks", default = Some(Nil))

@@ -16,7 +16,8 @@ class AvTest(assembly: File) extends FunSuite {
       IO.copyDirectory(testDir, outputDir)
       val java = sys.env.get("JAVA").map(_ + "/bin/java").getOrElse("java")
       val (exit, out, err) =
-        runProcess(Process(Seq(java, "-jar", assembly.toString, "--no-timings"), outputDir))
+        runProcess(Process(
+          Seq(java, "-jar", assembly.toString, "--no-timings", "--no-build-cache"), outputDir))
       IO.write(file(outputDir.toString + ".out"), out)
       IO.write(file(outputDir.toString + ".err"), err)
 
@@ -63,14 +64,14 @@ class AvTest(assembly: File) extends FunSuite {
     val files1 = getFileNames(dir1)
     val files2 = getFileNames(dir2)
     files1.foreach { f1 =>
-      assert(files2.find(f1==).isDefined, "file '%s' is missing from output" format f1)
+      assert(files2.exists(f1==), "file '%s' is missing from output" format f1)
       compareStrings(
         IO.read(file(dir2 + f1)),
         IO.read(file(dir1 + f1)),
         "file '%s' is different in output:" format f1)
     }
     files2.foreach { f2 =>
-      assert(files1.find(f2==).isDefined, "file '%s' is new in output" format f2)
+      assert(files1.exists(f2==), "file '%s' is new in output" format f2)
     }
   }
 
