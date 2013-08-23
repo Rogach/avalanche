@@ -77,6 +77,7 @@ object BuildCompiler {
   }
 
   def saveVirtualDir(v: VirtualDirectory, dir: File) {
+    FileUtils.deleteQuietly(dir)
     dir.mkdirs
     v.foreach { f =>
       FileUtils.writeByteArrayToFile(new File(dir + "/" + f.name), f.toByteArray)
