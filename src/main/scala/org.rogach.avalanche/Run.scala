@@ -45,7 +45,9 @@ package run {
         nextTasks.sortBy(_.task.threads).reverse.headOption map { t =>
           if (t.task.threads <= threads || threads == Avalanche.opts.parallel()) {
             if (t.task.name == "-avalanche-root-task" || t.task.body == BuildImports.NoBody) {
-              status(t) = Completed
+              status(t) =
+                if (tasks.neighbours(t).exists(d => status(d) == Completed)) Completed
+                else Cached
             } else {
               try {
                 verbose(s"Trying task '$t', on ${now}")
