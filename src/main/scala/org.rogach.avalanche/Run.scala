@@ -42,50 +42,50 @@ package run {
 
     def receive = {
       case Next =>
-        nextTasks.sortBy(_.task.threads).reverse.headOption map { t =>
-          if (t.task.threads <= threads || threads == Avalanche.opts.parallel()) {
-            if (t.task.name == "-avalanche-root-task" || t.task.body == BuildImports.NoBody) {
-              status(t) =
-                if (tasks.neighbours(t).exists(d => status(d) == Completed)) Completed
-                else Cached
-            } else {
-              try {
-                verbose(s"Trying task '$t', on ${now}")
-                if (!Avalanche.opts.isSuppressed(t)) {
-                  val needsReRun =
-                    t.getReRun || Avalanche.opts.isForced(t) || Avalanche.opts.allForced()
-                  if (Avalanche.opts.dryRun()) {
-                    if (needsReRun || tasks.neighbours(t).exists(d => status(d) == Completed)) {
-                      success(s"task '$t'")
-                      status(t) = Completed
-                    } else {
-                      verbose("Not rebuilding")
-                      status(t) = Cached
-                    }
+        nextTasks.sortBy(_.task.threads).reverse
+        .dropWhile(t => threads != Avalanche.opts.parallel() && t.task.threads > threads)
+        .headOption.map { t =>
+          if (t.task.name == "-avalanche-root-task" || t.task.body == BuildImports.NoBody) {
+            status(t) =
+              if (tasks.neighbours(t).exists(d => status(d) == Completed)) Completed
+              else Cached
+          } else {
+            try {
+              verbose(s"Trying task '$t', on ${now}")
+              if (!Avalanche.opts.isSuppressed(t)) {
+                val needsReRun =
+                  t.getReRun || Avalanche.opts.isForced(t) || Avalanche.opts.allForced()
+                if (Avalanche.opts.dryRun()) {
+                  if (needsReRun || tasks.neighbours(t).exists(d => status(d) == Completed)) {
+                    success(s"task '$t'")
+                    status(t) = Completed
                   } else {
-                    if (needsReRun) {
-                      context.actorOf(Props[Runner]) ! StartTask(t)
-                      threads -= t.task.threads
-                      status(t) = Started
-                    } else {
-                      verbose("Not rebuilding")
-                      status(t) = Cached
-                    }
+                    verbose("Not rebuilding")
+                    status(t) = Cached
                   }
                 } else {
-                  verbose("Task suppressed")
-                  status(t) = Cached
+                  if (needsReRun) {
+                    context.actorOf(Props[Runner]) ! StartTask(t)
+                    threads -= t.task.threads
+                    status(t) = Started
+                  } else {
+                    verbose("Not rebuilding")
+                    status(t) = Cached
+                  }
                 }
-              } catch { case e:Throwable =>
-                status(t) = Failed
-                exceptions += (t -> e)
-                ErrorHandler.apply(e)
+              } else {
+                verbose("Task suppressed")
+                status(t) = Cached
               }
+            } catch { case e:Throwable =>
+              status(t) = Failed
+              exceptions += (t -> e)
+              ErrorHandler.apply(e)
             }
-
-            // there may be more free threads left, try starting new task
-            self ! Next
           }
+
+          // there may be more free threads left, try starting new task
+          self ! Next
         } getOrElse {
           // check that there are no tasks executing
           if (threads == Avalanche.opts.parallel()) {
