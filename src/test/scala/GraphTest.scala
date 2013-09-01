@@ -11,22 +11,17 @@ class GraphTest extends UsefulTest {
     )
   )
 
+  test("roots retrieval") {
+    testGraph.roots ==== Set('a','b','c')
+  }
   test("depth first traversal, with descending into all nodes") {
-    testGraph.depthFirstSearch() ==== List(
-      ('f',Set()), ('g',Set()), ('h',Set()),
-      ('d',Set('f', 'g', 'h')), ('e',Set('g')),
-      ('a',Set('d', 'e')), ('b',Set('d')),
-      ('c',Set('e', 'h'))
-    )
+    testGraph.depthFirstSearch(testGraph.roots) ==== List('f','g','h','d','e','a','b','c')
   }
   test("depth first traversal, excluding tree part") {
-    testGraph.depthFirstSearch('d'!=) ==== List(
-      ('g',Set()), ('e',Set('g')), ('a',Set('d', 'e')),
-      ('b',Set('d')), ('h',Set()), ('c',Set('e', 'h'))
-    )
+    testGraph.depthFirstSearch(testGraph.roots, 'd'!=) ==== List('g','e','a','b','h','c')
   }
   test("graph with single element") {
-    Graph(Map("a" -> Set[String]())).depthFirstSearch("a"!=) ==== List()
+    Graph(Map("a" -> Set[String]())).depthFirstSearch(Set("a"), "a"!=) ==== List()
   }
 
 }

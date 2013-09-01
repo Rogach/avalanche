@@ -30,15 +30,14 @@ package run {
   case object Cached extends TaskState
 
   class Master(tasks: Graph[TaskDep]) extends Actor {
+    lazy val roots: Set[TaskDep] = tasks.roots
     val status = collection.mutable.Map[TaskDep, TaskState]((tasks.nodes.map(_ -> Pending)).toSeq:_*)
     val exceptions = collection.mutable.ListBuffer[(TaskDep, Throwable)]()
     var threads = Avalanche.opts.parallel()
 
     private def nextTasks: List[TaskDep] =
-      tasks.depthFirstSearch(t => status(t) == Pending)
-      .collect {
-        case (task, deps) if deps.forall(d => status(d) == Completed || status(d) == Cached) => task
-      }
+      tasks.depthFirstSearch(roots, t => status(t) == Pending)
+      .filter(t => tasks(t).forall(d => status(d) == Completed || status(d) == Cached))
 
     def receive = {
       case Next =>
@@ -47,7 +46,7 @@ package run {
         .headOption.map { t =>
           if (t.task.name == "-avalanche-root-task" || t.task.body == BuildImports.NoBody) {
             status(t) =
-              if (tasks.neighbours(t).exists(d => status(d) == Completed)) Completed
+              if (tasks(t).exists(d => status(d) == Completed)) Completed
               else Cached
           } else {
             try {
@@ -56,7 +55,7 @@ package run {
                 val needsReRun =
                   t.getReRun || Avalanche.opts.isForced(t) || Avalanche.opts.allForced()
                 if (Avalanche.opts.dryRun()) {
-                  if (needsReRun || tasks.neighbours(t).exists(d => status(d) == Completed)) {
+                  if (needsReRun || tasks(t).exists(d => status(d) == Completed)) {
                     success(s"task '$t'")
                     status(t) = Completed
                   } else {

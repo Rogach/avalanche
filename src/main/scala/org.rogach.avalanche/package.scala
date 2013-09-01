@@ -39,7 +39,7 @@ package object avalanche {
   def warn(mess:String) = log(mess, WARN)
   def success(mess:String) = log(mess, SUCCESS)
   def verbose(mess:String) = {
-    if (Avalanche.opts.isVerbose)
+    if (Avalanche.opts == null || Avalanche.opts.isVerbose)
       log(mess, VERBOSE)
   }
 
@@ -66,4 +66,12 @@ package object avalanche {
       println("")
     }
   }
+
+  def timed[A](name: String)(fn: => A): A = {
+    val t = System.currentTimeMillis
+    try {
+      fn
+    } finally verbose(s"Elapsed ($name): ${System.currentTimeMillis - t} ms")
+  }
+
 }
