@@ -1,7 +1,7 @@
 import sbt._
 import Keys._
-import sbtassembly.Plugin._
-import sbtassembly.Plugin.AssemblyKeys._
+import sbtassembly._
+import sbtassembly.AssemblyKeys._
 import org.scalatest
 
 object build extends Build {

@@ -4,8 +4,8 @@ import avalanche._
 import tools.nsc.{Global, Settings}
 import tools.nsc.io.VirtualDirectory
 import tools.nsc.reporters.StoreReporter
-import tools.nsc.interpreter.AbstractFileClassLoader
 import tools.nsc.util._
+import reflect.internal.util.AbstractFileClassLoader
 import reflect.internal.util.BatchSourceFile
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils

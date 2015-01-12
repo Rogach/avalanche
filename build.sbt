@@ -1,34 +1,29 @@
-import AssemblyKeys._
-
-version := "1.7.0"
+version := "1.8.0"
 
 name := "avalanche"
 
-scalaVersion := "2.10.2"
+scalaVersion := "2.11.4"
 
 scalacOptions ++= Seq(
   "-deprecation",
   "-unchecked",
   "-optimize",
   "-feature",
-  "-Yinline-warnings",
   "-language:postfixOps",
   "-language:reflectiveCalls",
   "-language:implicitConversions"
 )
-
-seq(assemblySettings:_*)
 
 mainClass in assembly := Some("org.rogach.avalanche.Avalanche")
 
 jarName in assembly <<= version map (v => "avalanche-%s.jar" format v)
 
 libraryDependencies <++= scalaVersion (sv => Seq(
-  "org.rogach" %% "scallop" % "0.9.2",
+  "org.rogach" %% "scallop" % "0.9.5",
   "org.scala-lang" % "scala-compiler" % sv,
   "commons-io" % "commons-io" % "2.4",
-  "org.scalatest" %% "scalatest" % "1.9.1" % "test",
-  "com.typesafe.akka" %% "akka-actor" % "2.2.0"
+  "org.scalatest" %% "scalatest" % "2.2.2" % "test",
+  "com.typesafe.akka" %% "akka-actor" % "2.3.6"
 ))
 
 resolvers ++= Seq(
@@ -47,7 +42,9 @@ buildInfoKeys := Seq[BuildInfoKey](
   scalaVersion,
   sbtVersion,
   buildInfoBuildNumber,
-  "buildTime" -> {() => System.currentTimeMillis}
+  BuildInfoKey.action("buildTime") {
+    System.currentTimeMillis
+  }
 )
 
 buildInfoPackage := "org.rogach.avalanche"
