@@ -3,7 +3,7 @@ package org.rogach.avalanche
 import scala.collection.mutable
 import java.io.File
 
-<#assign N = 3>
+<#assign N = 22>
 <#macro lc num><#list 1..num as h><#nested h><#if num != h>, </#if></#list></#macro>
 
 case class FunTaskDescr(inputs: List[File], outputs: List[File], dependencies: List[TaskDep])
