@@ -72,11 +72,8 @@ package object avalanche {
     }
   }
 
-  def timed[A](name: String)(fn: => A): A = {
-    val t = System.currentTimeMillis
-    try {
-      fn
-    } finally verbose(s"Elapsed ($name): ${System.currentTimeMillis - t} ms")
+  def profile[A](name: String)(fn: => A): A = {
+    Profiler.profile(name)(fn)
   }
 
 }

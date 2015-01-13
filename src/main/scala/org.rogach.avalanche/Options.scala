@@ -29,6 +29,7 @@ class Opts(args: Seq[String]) extends ScallopConf(args) {
   private val verbose = tally("verbose", descr = "print more information")
   val tasks = trailArg[List[String]]("tasks to run", descr = "tasks to run", required = false, default = Some(Nil))
   val noTimings = opt[Boolean](hidden = true)
+  val profile = opt[Boolean]("profile", hidden = true, noshort = true)
 
   lazy val suppressedTaskDeps = suppressedTasks().map(Utils.TaskDepParser.apply)
   def isSuppressed(td: TaskDep) =

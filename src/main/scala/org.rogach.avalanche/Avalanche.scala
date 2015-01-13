@@ -36,11 +36,16 @@ object Avalanche {
       sys.addShutdownHook {
         if (!opts.ignoreLock()) lock.delete
         if (!finished) error("Detected abnormal exit! (some good soul issued ^C or good ol' kill)")
+        if (opts.profile()) {
+          Profiler.dump()
+        }
       }
 
       val file = opts.buildFile.get.getOrElse("av.scala")
       if (!(new File(file)).exists) throw new BuildFileNotFound(file)
-      BuildCompiler.compile(file)
+      profile("Avalanche/compile build") {
+        BuildCompiler.compile(file)
+      }
 
       // print task list
       if (opts.listTasks()) {
