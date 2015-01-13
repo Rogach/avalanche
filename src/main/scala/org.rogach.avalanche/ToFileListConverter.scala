@@ -14,6 +14,6 @@ object ToFileListConverter {
     def convertToFileList(file: File) = List(file)
   }
   implicit val stringToFileListConverter = new ToFileListConverter[String] {
-    def convertToFileList(s: String) = List(f(s))
+    def convertToFileList(s: String) = List(new File(s))
   }
 }
