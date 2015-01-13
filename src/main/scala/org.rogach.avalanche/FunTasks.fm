@@ -113,6 +113,7 @@ trait FunTask[R] {
         GlobalTasks.inputFiles = new mutable.ListBuffer()
         GlobalTasks.outputFiles = new mutable.ListBuffer()
         GlobalTasks.dependencies = new mutable.ListBuffer()
+
         val result = applyArguments(args)
         val resultFiles = lc.convertToFileList(result)
         FunTaskDescr(

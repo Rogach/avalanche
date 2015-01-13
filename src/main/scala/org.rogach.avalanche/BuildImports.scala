@@ -1,5 +1,6 @@
 package org.rogach.avalanche
 
+import avalanche._
 import java.io.File
 
 object BuildImports
@@ -28,10 +29,14 @@ trait BuildImports {
       val fs = inputs(args) ++ outputs(args)
       if (fs.size > 0) fs.map(_.toString.size).max else 0
     }
-    reportFiles("input", inputs(args), ln)
-    reportFiles("output", outputs(args), ln)
 
-    val inputsModify = inputs(args).map(f =>
+    val inputFiles = inputs(args)
+    val outputFiles = outputs(args)
+
+    reportFiles("input", inputFiles, ln)
+    reportFiles("output", outputFiles, ln)
+
+    val inputsModify = inputFiles.map(f =>
       if (f.exists) Some(f.lastModified)
       else {
         if (!Avalanche.opts.dryRun())
@@ -41,7 +46,7 @@ trait BuildImports {
     ).flatten
     val inputsModifyTime = if (inputsModify.isEmpty) System.currentTimeMillis else inputsModify.max
 
-    val outputsModify = outputs(args).map(_.lastModified)
+    val outputsModify = outputFiles.map(_.lastModified)
     val outputsModifyTime = if (outputsModify.isEmpty) 0 else outputsModify.min
     inputsModifyTime > outputsModifyTime
   }

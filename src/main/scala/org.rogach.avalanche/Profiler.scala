@@ -23,12 +23,23 @@ object Profiler {
     }
   }
 
+  def count(name: String, n: Int = 1) {
+    if (Avalanche.opts != null && Avalanche.opts.profile()) {
+      if (!profileData.contains(name)) {
+        profileData.put(name, new mutable.ListBuffer[Long]())
+      }
+      (1 to n).foreach { _ =>
+        profileData(name) += 0
+      }
+    }
+  }
+
   def dump() {
     printf("Profile results:\n")
     val names = profileData.keys.toList
     val nameLength = names.map(_.size).max
     printf(s"%${nameLength}s | count | ms/op | ms total |  ms max\n", "")
-    profileData.mapValues(_.toList).foreach { case (name, times) =>
+    profileData.mapValues(_.toList).toList.sortBy(_._1).foreach { case (name, times) =>
       val count = times.size
       val total = times.sum
       val mean = total / times.size
