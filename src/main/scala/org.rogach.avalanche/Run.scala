@@ -34,20 +34,31 @@ package run {
     val status = collection.mutable.Map[TaskDep, TaskState]((tasks.nodes.map(_ -> Pending)).toSeq:_*)
     val exceptions = collection.mutable.ListBuffer[(TaskDep, Throwable)]()
     var threads = Avalanche.opts.parallel()
-
-    private def nextTasks: List[TaskDep] =
-      tasks.depthFirstSearch(roots, t => status(t) == Pending)
-      .filter(t => tasks(t).forall(d => status(d) == Completed || status(d) == Cached))
+    val taskQueue = collection.mutable.ArrayBuffer[TaskDep](tasks.depthFirstSearch(roots):_*)
 
     def receive = {
       case Next =>
-        nextTasks.sortBy(_.task.threads).reverse
-        .dropWhile(t => threads != Avalanche.opts.parallel() && t.task.threads > threads)
-        .headOption.map { t =>
+        profile("Run/select next task") {
+          val pendingTasks = taskQueue.view.filter {
+            t => status(t) == Pending &&
+            (tasks(t).forall(d => status(d) == Completed || status(d) == Cached))
+          }
+          if (Avalanche.opts.parallel() == threads) {
+            pendingTasks.headOption
+          } else if (threads > Avalanche.opts.parallel() / 2) {
+            pendingTasks.find(t => t.task.threads <= threads)
+          } else {
+            pendingTasks
+            .sortBy(_.task.threads).reverse
+            .dropWhile(t => t.task.threads > threads)
+            .headOption
+          }
+        }.map { t =>
           if (t.task.name == "-avalanche-root-task" || t.task.body == BuildImports.NoBody) {
             status(t) =
               if (tasks(t).exists(d => status(d) == Completed)) Completed
               else Cached
+            taskQueue -= t
           } else {
             try {
               verbose(s"Trying task '$t', on ${now}")
@@ -58,26 +69,32 @@ package run {
                   if (needsReRun || tasks(t).exists(d => status(d) == Completed)) {
                     success(s"task '$t'")
                     status(t) = Completed
+                    taskQueue -= t
                   } else {
                     verbose("Not rebuilding")
                     status(t) = Cached
+                    taskQueue -= t
                   }
                 } else {
                   if (needsReRun) {
                     context.actorOf(Props[Runner]) ! StartTask(t)
                     threads -= t.task.threads
                     status(t) = Started
+                    taskQueue -= t
                   } else {
                     verbose("Not rebuilding")
                     status(t) = Cached
+                    taskQueue -= t
                   }
                 }
               } else {
                 verbose("Task suppressed")
                 status(t) = Cached
+                taskQueue -= t
               }
             } catch { case e:Throwable =>
               status(t) = Failed
+              taskQueue -= t
               exceptions += (t -> e)
               ErrorHandler.apply(e)
             }
@@ -108,10 +125,12 @@ package run {
         }
       case TaskSuccess(t) =>
         status(t) = Completed
+        taskQueue -= t
         threads += t.task.threads
         self ! Next
       case TaskFailed(t, ex) =>
         status(t) = Failed
+        taskQueue -= t
         threads += t.task.threads
         exceptions += (t -> ex)
         ErrorHandler.apply(ex)
