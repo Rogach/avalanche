@@ -3,6 +3,7 @@ import Keys._
 import sbtassembly._
 import sbtassembly.AssemblyKeys._
 import org.scalatest
+import fmpp.FmppPlugin._
 
 object build extends Build {
   val avTest = TaskKey[Unit]("av-test") <<= (assembly) map { (assemblyFile) =>
@@ -22,5 +23,6 @@ object build extends Build {
       }
     }
 
-  lazy val root = Project("main", file(".")) settings (avTest, avTestCopy)
+  lazy val root = Project("main", file("."),
+    settings = Defaults.coreDefaultSettings ++ fmppSettings ++ List(avTest, avTestCopy))
 }

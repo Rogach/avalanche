@@ -16,7 +16,7 @@ scalacOptions ++= Seq(
 
 mainClass in assembly := Some("org.rogach.avalanche.Avalanche")
 
-jarName in assembly <<= version map (v => "avalanche-%s.jar" format v)
+assemblyJarName <<= version map (v => "avalanche-%s.jar" format v)
 
 libraryDependencies <++= scalaVersion (sv => Seq(
   "org.rogach" %% "scallop" % "0.9.5",

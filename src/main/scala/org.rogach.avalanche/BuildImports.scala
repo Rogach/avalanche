@@ -3,46 +3,53 @@ package org.rogach.avalanche
 import java.io.File
 import sys.process._
 
-object BuildImports {
+object BuildImports extends FunTasks {
   def task(name: String, rerun: List[String] => Boolean, deps: List[String] => Seq[TaskDep], body: List[String] => Unit): Task = {
     val t = new Task(name, rerun, deps, body)
     Avalanche.tasks += t
     t
   }
 
+  def rerunOnModifiedFiles(
+      taskName: String,
+      inputs: List[String] => Seq[File],
+      outputs: List[String] => Seq[File])
+      : List[String] => Boolean =
+  { args =>
+    def reportFiles(msg: String, fs: Seq[File], ln: Int) = if (Avalanche.opts.isVerbose) {
+      fs.foreach { f =>
+        if (f.exists) {
+          printf("%-6s: %-"+ln+"s | %3$tF %3$tT\n", msg, f, f.lastModified)
+        } else {
+          printf("%-6s: %-"+ln+"s | not found\n", msg, f)
+        }
+      }
+    }
+    val ln = {
+      val fs = inputs(args) ++ outputs(args)
+      if (fs.size > 0) fs.map(_.toString.size).max else 0
+    }
+    reportFiles("input", inputs(args), ln)
+    reportFiles("output", outputs(args), ln)
+
+    val inputsModify = inputs(args).map(f =>
+      if (f.exists) Some(f.lastModified)
+      else {
+        if (!Avalanche.opts.dryRun())
+          throw new InputFileNotFound(f.toString, taskName, args)
+        Some(System.currentTimeMillis)
+      }
+    ).flatten
+    val inputsModifyTime = if (inputsModify.isEmpty) System.currentTimeMillis else inputsModify.max
+
+    val outputsModify = outputs(args).map(_.lastModified)
+    val outputsModifyTime = if (outputsModify.isEmpty) 0 else outputsModify.min
+    inputsModifyTime > outputsModifyTime
+  }
+
   def task(name: String, inputs: List[String] => Seq[File], outputs: List[String] => Seq[File], deps: List[String] => Seq[TaskDep] = _ => Nil, body: List[String] => Unit): Task =
     task(name,
-      rerun = { args =>
-        def reportFiles(msg: String, fs: Seq[File], ln: Int) = if (Avalanche.opts.isVerbose) {
-          fs.foreach { f =>
-            if (f.exists) {
-              printf("%-6s: %-"+ln+"s | %3$tF %3$tT\n", msg, f, f.lastModified)
-            } else {
-              printf("%-6s: %-"+ln+"s | not found\n", msg, f)
-            }
-          }
-        }
-        val ln = {
-          val fs = inputs(args) ++ outputs(args)
-          if (fs.size > 0) fs.map(_.toString.size).max else 0
-        }
-        reportFiles("input", inputs(args), ln)
-        reportFiles("output", outputs(args), ln)
-
-        val inputsModify = inputs(args).map(f =>
-          if (f.exists) Some(f.lastModified)
-          else {
-            if (!Avalanche.opts.dryRun())
-              throw new InputFileNotFound(f.toString, name, args)
-            Some(System.currentTimeMillis)
-          }
-        ).flatten
-        val inputsModifyTime = if (inputsModify.isEmpty) System.currentTimeMillis else inputsModify.max
-
-        val outputsModify = outputs(args).map(_.lastModified)
-        val outputsModifyTime = if (outputsModify.isEmpty) 0 else outputsModify.min
-        inputsModifyTime > outputsModifyTime
-      },
+      rerun = rerunOnModifiedFiles(name, inputs, outputs),
       deps = deps,
       body = body
     )
@@ -115,4 +122,14 @@ object BuildImports {
   implicit def taskSeq2taskDepSeq(ts: Seq[Task]) = ts.map(TaskDep(_, Nil))
 
   def log(msg: String) = avalanche.logOutput.value.println(msg)
+
+  implicit val unitToFileListConverter = new ToFileListConverter[Unit] {
+    def convertToFileList(u: Unit) = Nil
+  }
+  implicit val fileToFileListConverter = new ToFileListConverter[File] {
+    def convertToFileList(file: File) = List(file)
+  }
+  implicit val stringToFileListConverter = new ToFileListConverter[String] {
+    def convertToFileList(s: String) = List(f(s))
+  }
 }

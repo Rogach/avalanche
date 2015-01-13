@@ -1,0 +1,129 @@
+package org.rogach.avalanche
+
+import scala.collection.mutable
+import java.io.File
+
+<#assign N = 3>
+<#macro lc num><#list 1..num as h><#nested h><#if num != h>, </#if></#list></#macro>
+
+case class FunTaskDescr(inputs: List[File], outputs: List[File], dependencies: List[TaskDep])
+
+object GlobalTasks {
+  var suppressSideEffects: Boolean = false
+
+  var inputFiles = new mutable.ListBuffer[File]()
+  var outputFiles = new mutable.ListBuffer[File]()
+  var dependencies = new mutable.ListBuffer[TaskDep]()
+
+  val descrCache = new mutable.HashMap[(String, List[String]), FunTaskDescr]()
+}
+
+trait FunTasks {
+
+  def build[A](fn: => A) {
+    if (!GlobalTasks.suppressSideEffects) {
+      fn
+    }
+  }
+
+  def expect(fileName: String): String = {
+    GlobalTasks.inputFiles += new File(fileName)
+    fileName
+  }
+
+  def expect(file: File): File = {
+    GlobalTasks.inputFiles += file
+    file
+  }
+
+  def output(fileName: String): String = {
+    GlobalTasks.outputFiles += new File(fileName)
+    fileName
+  }
+
+  def output(file: File): File = {
+    GlobalTasks.outputFiles += file
+    file
+  }
+
+  <#list 1..N as i>
+  def funtask[R]
+    (name: String, fn: (<@lc i; j>String</@lc>) => R)
+    (implicit lc: ToFileListConverter[R])
+    : FunTask${i}[R] = {
+    val f = new FunTask${i}[R](name, fn)(lc)
+    Avalanche.tasks += f.underlying
+    f
+  }
+
+  </#list>
+}
+
+trait FunTask[R] {
+  val name: String
+  val lc: ToFileListConverter[R]
+
+  def applyArguments(args: List[String]): R
+
+  def getDescr(args: List[String]): FunTaskDescr =
+    GlobalTasks.descrCache.getOrElseUpdate((name, args), { 
+      val oldSuppress = GlobalTasks.suppressSideEffects
+      val oldInputs = GlobalTasks.inputFiles
+      val oldOutputs = GlobalTasks.outputFiles
+      val oldDependencies = GlobalTasks.dependencies
+      try {
+        GlobalTasks.suppressSideEffects = true
+        GlobalTasks.inputFiles = new mutable.ListBuffer()
+        GlobalTasks.outputFiles = new mutable.ListBuffer()
+        GlobalTasks.dependencies = new mutable.ListBuffer()
+        val resultFiles = lc.convertToFileList(applyArguments(args))
+        FunTaskDescr(
+          inputs = GlobalTasks.inputFiles.toList,
+          outputs = GlobalTasks.outputFiles.toList ++ resultFiles,
+          dependencies = GlobalTasks.dependencies.toList
+        )
+      } finally {
+        GlobalTasks.suppressSideEffects = oldSuppress
+        GlobalTasks.inputFiles = oldInputs
+        GlobalTasks.outputFiles = oldOutputs
+        GlobalTasks.dependencies = oldDependencies
+      }
+    })
+  def getInputFiles(args: List[String]): List[File] = getDescr(args).inputs
+  def getOutputFiles(args: List[String]): List[File] = getDescr(args).outputs
+  def getDependencies(args: List[String]): List[TaskDep] = getDescr(args).dependencies
+
+  val underlying = new Task(
+    name = name,
+    rerun = BuildImports.rerunOnModifiedFiles(
+      name, 
+      getInputFiles,
+      getOutputFiles
+    ),
+    deps = getDependencies,
+    body = applyArguments
+  )
+
+  def threads = underlying.threads
+  def threads_=(t: Int) { underlying.threads = t }
+}
+
+<#list 1..N as i>
+class FunTask${i}[R]
+  (val name: String, fn: (<@lc i; j>String</@lc>) => R)
+  (implicit val lc: ToFileListConverter[R])
+extends Function${i}[<@lc i; j>String</@lc>,R]
+with FunTask[R] {
+  def apply(<@lc i; j>s${j}: String</@lc>): R = {
+    val oldSuppress = GlobalTasks.suppressSideEffects
+    try {
+      GlobalTasks.suppressSideEffects = true
+      fn(<@lc i; j>s${j}</@lc>)
+    } finally {
+      GlobalTasks.suppressSideEffects = oldSuppress
+    }
+  }
+  def applyArguments(args: List[String]) = fn(<@lc i; j>args(${j}-1)</@lc>)
+}
+
+</#list>

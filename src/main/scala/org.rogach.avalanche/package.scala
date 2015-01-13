@@ -22,7 +22,7 @@ package object avalanche {
       val prefix =
         if (System.console() == null || logOutput.value != System.out) "[avalanche] "
         else {
-         "[\033[%smavalanche\033[0m] " format (
+         "[\u001b[%smavalanche\u001b[0m] " format (
             level match {
               case ERROR => "31"
               case SUCCESS => "32"
@@ -58,9 +58,9 @@ package object avalanche {
 
   def printSuccessBanner = {
     if (System.console() != null) {
-      print("\033[32m")
+      print("\u001b[32m")
       print(success_banner)
-      println("\033[0m")
+      println("\u001b[0m")
     } else {
       print(success_banner)
       println("")
