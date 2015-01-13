@@ -70,6 +70,15 @@ object BuildImports extends FunTasks {
   def aggregate(name: String, deps: => Seq[TaskDep]) = task(name, once, _ => deps, NoBody)
 
   def files(names: String*)(args: List[String]) = names.map(_.format(args:_*)).map(new File(_))
+
+  private def bash_glob(g: String): List[String] =
+    Seq("bash", "-c", "ls -1 " + g).lineStream_!(ProcessLogger(s =>())).toList
+
+  def _glob(names: String*): List[File] =
+    names.map(n => bash_glob(n).headOption.getOrElse(n)).map(new File(_)).toList
+  def _globs(names: String*): List[File] =
+    names.flatMap(bash_glob).map(new File(_)).toList
+
   def glob(names: String*)(args: List[String]) =
     names.map(n => Seq("bash","-c","ls -1 %s" format (n.format(args:_*))).lineStream_!(ProcessLogger(s =>())).toList.headOption.getOrElse(n)).map(new File(_))
   def globs(names: String*)(args: List[String]) =

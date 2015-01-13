@@ -4,9 +4,14 @@ import scala.collection.mutable
 import java.io.File
 
 <#assign N = 22>
-<#macro lc num><#list 1..num as h><#nested h><#if num != h>, </#if></#list></#macro>
+<#macro lc num><#if num gt 0><#list 1..num as h><#nested h><#if num != h>, </#if></#list></#if></#macro>
 
-case class FunTaskDescr(inputs: List[File], outputs: List[File], dependencies: List[TaskDep])
+case class FunTaskDescr(
+  inputs: List[File],
+  outputs: List[File],
+  dependencies: List[TaskDep],
+  result: Any
+)
 
 object GlobalTasks {
   var suppressSideEffects: Boolean = false
@@ -14,8 +19,6 @@ object GlobalTasks {
   var inputFiles = new mutable.ListBuffer[File]()
   var outputFiles = new mutable.ListBuffer[File]()
   var dependencies = new mutable.ListBuffer[TaskDep]()
-
-  val descrCache = new mutable.HashMap[(String, List[String]), FunTaskDescr]()
 }
 
 trait FunTasks {
@@ -36,8 +39,14 @@ trait FunTasks {
     file
   }
 
+  def expect(files: List[File]): List[File] = {
+    GlobalTasks.inputFiles ++= files
+    files
+  }
+
   def input(fileName: String) = expect(fileName)
   def input(file: File) = expect(file)
+  def input(files: List[File]) = expect(files)
 
   def output(fileName: String): String = {
     GlobalTasks.outputFiles += new File(fileName)
@@ -49,7 +58,20 @@ trait FunTasks {
     file
   }
 
-  <#list 1..N as i>
+  def output(files: List[File]): List[File] = {
+    GlobalTasks.outputFiles ++= files
+    files
+  }
+
+  def depend(task: Task) {
+    GlobalTasks.dependencies += task()
+  }
+
+  def depend(taskDep: TaskDep) {
+    GlobalTasks.dependencies += taskDep
+  }
+
+  <#list 0..N as i>
   def funtask[R]
     (name: String, fn: (<@lc i; j>String</@lc>) => R)
     (implicit lc: ToFileListConverter[R])
@@ -68,30 +90,38 @@ trait FunTask[R] {
 
   def applyArguments(args: List[String]): R
 
-  def getDescr(args: List[String]): FunTaskDescr =
-    GlobalTasks.descrCache.getOrElseUpdate((name, args), { 
-      val oldSuppress = GlobalTasks.suppressSideEffects
-      val oldInputs = GlobalTasks.inputFiles
-      val oldOutputs = GlobalTasks.outputFiles
-      val oldDependencies = GlobalTasks.dependencies
-      try {
-        GlobalTasks.suppressSideEffects = true
-        GlobalTasks.inputFiles = new mutable.ListBuffer()
-        GlobalTasks.outputFiles = new mutable.ListBuffer()
-        GlobalTasks.dependencies = new mutable.ListBuffer()
-        val resultFiles = lc.convertToFileList(applyArguments(args))
-        FunTaskDescr(
-          inputs = GlobalTasks.inputFiles.toList,
-          outputs = GlobalTasks.outputFiles.toList ++ resultFiles,
-          dependencies = GlobalTasks.dependencies.toList
-        )
-      } finally {
-        GlobalTasks.suppressSideEffects = oldSuppress
-        GlobalTasks.inputFiles = oldInputs
-        GlobalTasks.outputFiles = oldOutputs
-        GlobalTasks.dependencies = oldDependencies
-      }
-    })
+  def safeApply(args: List[String]): R = {
+    GlobalTasks.dependencies += underlying.apply(args:_*)
+    val descr = getDescr(args)
+    GlobalTasks.inputFiles ++= descr.outputs
+    descr.result.asInstanceOf[R]
+  }
+
+  def getDescr(args: List[String]): FunTaskDescr = {
+    val oldSuppress = GlobalTasks.suppressSideEffects
+    val oldInputs = GlobalTasks.inputFiles
+    val oldOutputs = GlobalTasks.outputFiles
+    val oldDependencies = GlobalTasks.dependencies
+    try {
+      GlobalTasks.suppressSideEffects = true
+      GlobalTasks.inputFiles = new mutable.ListBuffer()
+      GlobalTasks.outputFiles = new mutable.ListBuffer()
+      GlobalTasks.dependencies = new mutable.ListBuffer()
+      val result = applyArguments(args)
+      val resultFiles = lc.convertToFileList(result)
+      FunTaskDescr(
+        inputs = GlobalTasks.inputFiles.toList.distinct,
+        outputs = (GlobalTasks.outputFiles.toList ++ resultFiles).distinct,
+        dependencies = GlobalTasks.dependencies.toList,
+        result = result
+      )
+    } finally {
+      GlobalTasks.suppressSideEffects = oldSuppress
+      GlobalTasks.inputFiles = oldInputs
+      GlobalTasks.outputFiles = oldOutputs
+      GlobalTasks.dependencies = oldDependencies
+    }
+  }
   def getInputFiles(args: List[String]): List[File] = getDescr(args).inputs
   def getOutputFiles(args: List[String]): List[File] = getDescr(args).outputs
   def getDependencies(args: List[String]): List[TaskDep] = getDescr(args).dependencies
@@ -99,7 +129,7 @@ trait FunTask[R] {
   val underlying = new Task(
     name = name,
     rerun = BuildImports.rerunOnModifiedFiles(
-      name, 
+      name,
       getInputFiles,
       getOutputFiles
     ),
@@ -111,20 +141,14 @@ trait FunTask[R] {
   def threads_=(t: Int) { underlying.threads = t }
 }
 
-<#list 1..N as i>
+<#list 0..N as i>
 class FunTask${i}[R]
   (val name: String, fn: (<@lc i; j>String</@lc>) => R)
   (implicit val lc: ToFileListConverter[R])
-extends Function${i}[<@lc i; j>String</@lc>,R]
+extends Function${i}[<@lc i; j>String</@lc><#if i gt 0>,</#if>R]
 with FunTask[R] {
   def apply(<@lc i; j>s${j}: String</@lc>): R = {
-    val oldSuppress = GlobalTasks.suppressSideEffects
-    try {
-      GlobalTasks.suppressSideEffects = true
-      fn(<@lc i; j>s${j}</@lc>)
-    } finally {
-      GlobalTasks.suppressSideEffects = oldSuppress
-    }
+    safeApply(List(<@lc i; j>s${j}</@lc>))
   }
   def applyArguments(args: List[String]) = fn(<@lc i; j>args(${j}-1)</@lc>)
 }
