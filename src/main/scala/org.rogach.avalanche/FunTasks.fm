@@ -36,6 +36,9 @@ trait FunTasks {
     file
   }
 
+  def input(fileName: String) = expect(fileName)
+  def input(file: File) = expect(file)
+
   def output(fileName: String): String = {
     GlobalTasks.outputFiles += new File(fileName)
     fileName
