@@ -48,7 +48,7 @@ package run {
           } else if (threads > Avalanche.opts.parallel() / 2) {
             pendingTasks.find(t => t.task.threads <= threads)
           } else {
-            pendingTasks
+            pendingTasks.toList
             .sortBy(_.task.threads).reverse
             .dropWhile(t => t.task.threads > threads)
             .headOption
