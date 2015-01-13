@@ -123,13 +123,4 @@ object BuildImports extends FunTasks {
 
   def log(msg: String) = avalanche.logOutput.value.println(msg)
 
-  implicit val unitToFileListConverter = new ToFileListConverter[Unit] {
-    def convertToFileList(u: Unit) = Nil
-  }
-  implicit val fileToFileListConverter = new ToFileListConverter[File] {
-    def convertToFileList(file: File) = List(file)
-  }
-  implicit val stringToFileListConverter = new ToFileListConverter[String] {
-    def convertToFileList(s: String) = List(f(s))
-  }
 }
