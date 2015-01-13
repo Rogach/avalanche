@@ -7,6 +7,7 @@ package object avalanche {
   val WARN = "warn"
   val SUCCESS = "success"
   val VERBOSE = "verbose"
+  val DEBUG = "debug"
   val INFO = "info"
 
   lazy val logOutput = new util.DynamicVariable[PrintStream](System.out)
@@ -41,6 +42,10 @@ package object avalanche {
   def verbose(mess:String) = {
     if (Avalanche.opts == null || Avalanche.opts.isVerbose)
       log(mess, VERBOSE)
+  }
+  def debug(mess:String) = {
+    if (Avalanche.opts == null || Avalanche.opts.isDebug)
+      log(mess, DEBUG)
   }
 
   val TIME_FORMAT = "%1$tb %1$te, %1$tT"

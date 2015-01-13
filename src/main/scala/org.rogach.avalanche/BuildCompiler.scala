@@ -40,6 +40,7 @@ object BuildCompiler {
     } else {
       // re-compile build file
       val startTime = System.currentTimeMillis
+      verbose("compiling build file...")
       try {
         val c = new Compiler
         val classesDir = c.compile(

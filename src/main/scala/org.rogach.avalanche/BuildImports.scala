@@ -16,12 +16,12 @@ object BuildImports extends FunTasks {
       outputs: List[String] => Seq[File])
       : List[String] => Boolean =
   { args =>
-    def reportFiles(msg: String, fs: Seq[File], ln: Int) = if (Avalanche.opts.isVerbose) {
+    def reportFiles(msg: String, fs: Seq[File], ln: Int) = if (Avalanche.opts.isDebug) {
       fs.foreach { f =>
         if (f.exists) {
-          printf("%-6s: %-"+ln+"s | %3$tF %3$tT\n", msg, f, f.lastModified)
+          printf("%-6s: %2$tF %2$tT | %3$s\n", msg, f.lastModified, f)
         } else {
-          printf("%-6s: %-"+ln+"s | not found\n", msg, f)
+          printf("%-6s: %-19s | %s\n", msg, "not found", f)
         }
       }
     }

@@ -26,7 +26,7 @@ class Opts(args: Seq[String]) extends ScallopConf(args) {
   val parallel = opt[Int]("parallel", short = 'P', descr = "controls the maximum amount of parallel tasks (threads) executing (see Task.threads). Defaults to serial execution", default = Some(1))
   private val quiet = opt[Boolean]("quiet", descr = "suppress avalanche output")
   private val silent = opt[Boolean]("silent", descr = "suppress all output, including output from scripts (stderr from scripts is still printed)")
-  private val verbose = opt[Boolean]("verbose", descr = "print more information")
+  private val verbose = tally("verbose", descr = "print more information")
   val tasks = trailArg[List[String]]("tasks to run", descr = "tasks to run", required = false, default = Some(Nil))
   val noTimings = opt[Boolean](hidden = true)
 
@@ -43,5 +43,6 @@ class Opts(args: Seq[String]) extends ScallopConf(args) {
 
   def isQuiet = quiet() || silent()
   def isSilent = silent()
-  def isVerbose = verbose() && ! silent() && ! quiet()
+  def isVerbose = verbose() > 0 && ! silent() && ! quiet()
+  def isDebug = verbose() > 1 && ! silent() && ! quiet()
 }
