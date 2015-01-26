@@ -110,8 +110,16 @@ package run {
         } getOrElse {
           // check that there are no tasks executing
           if (threads == Avalanche.opts.parallel()) {
-            context.system.shutdown
-            exceptions.headOption.foreach { _ =>
+            if (exceptions.isEmpty) {
+              if (!Avalanche.opts.dryRun()) {
+                printSuccessBanner
+                if (!Avalanche.opts.noTimings()) {
+                  success("Total time: %d s, completed %s" format (
+                    (System.currentTimeMillis - Avalanche.startTime) / 1000, now))
+                }
+              }
+              sys.exit(0)
+            } else {
               error("There were errors during parallel execution of tasks:")
               exceptions.map(_._1).foreach { td =>
                 error(s"  $td")
