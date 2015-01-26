@@ -27,6 +27,7 @@ package run {
   case object Started extends TaskState
   case object Completed extends TaskState
   case object Failed extends TaskState
+  case object Cancelled extends TaskState
   case object Cached extends TaskState
 
   class Master(tasks: Graph[TaskDep]) extends Actor {
@@ -62,7 +63,11 @@ package run {
           } else {
             try {
               verbose(s"Trying task '$t', on ${now}")
-              if (!Avalanche.opts.isSuppressed(t)) {
+              if (Avalanche.opts.isCancelled(t) && !Avalanche.opts.isForced(t)) {
+                verbose(s"Skipping task '$t', on ${now}")
+                status(t) = Cancelled
+                taskQueue -= t
+              } else if (Avalanche.opts.isForced(t) || !Avalanche.opts.isSkipped(t)) {
                 val needsReRun =
                   t.getReRun || Avalanche.opts.isForced(t) || Avalanche.opts.allForced()
                 if (Avalanche.opts.dryRun()) {

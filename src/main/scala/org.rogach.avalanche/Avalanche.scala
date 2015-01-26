@@ -57,7 +57,8 @@ object Avalanche {
 
       // ensure that task names in options are parsed
       // and errors are thrown when needed
-      opts.suppressedTaskDeps
+      opts.cancelledTaskDeps
+      opts.skippedTaskDeps
       opts.forcedTaskDeps
 
       if (!opts.dryRun())
