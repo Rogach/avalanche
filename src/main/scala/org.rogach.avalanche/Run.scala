@@ -118,6 +118,7 @@ package run {
                     (System.currentTimeMillis - Avalanche.startTime) / 1000, now))
                 }
               }
+              Avalanche.finished = true
               sys.exit(0)
             } else {
               error("There were errors during parallel execution of tasks:")
