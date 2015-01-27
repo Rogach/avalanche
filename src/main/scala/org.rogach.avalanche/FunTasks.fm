@@ -15,6 +15,29 @@ case class FunTaskDescr(
 )
 
 object GlobalTasks {
+  val localTasks = new ThreadLocal[GlobalTasks] {
+    override def initialValue() = new GlobalTasks
+  }
+  def suppressSideEffects = localTasks.get.suppressSideEffects
+  def suppressSideEffects_=(v: Boolean) {
+    localTasks.get.suppressSideEffects = v
+  }
+  def inputFiles = localTasks.get.inputFiles
+  def inputFiles_=(v: mutable.ListBuffer[File]) {
+    localTasks.get.inputFiles = v
+  }
+  def outputFiles = localTasks.get.outputFiles
+  def outputFiles_=(v: mutable.ListBuffer[File]) {
+    localTasks.get.outputFiles = v
+  }
+  def dependencies = localTasks.get.dependencies
+  def dependencies_=(v: mutable.ListBuffer[TaskDep]) {
+    localTasks.get.dependencies = v
+  }
+  def descrCache = localTasks.get.descrCache
+}
+
+class GlobalTasks {
   var suppressSideEffects: Boolean = false
 
   var inputFiles = new mutable.ListBuffer[File]()
