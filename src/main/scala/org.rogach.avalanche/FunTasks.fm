@@ -11,7 +11,8 @@ case class FunTaskDescr(
   inputs: List[File],
   outputs: List[File],
   dependencies: List[TaskDep],
-  result: Any
+  result: Any,
+  isAggregate: Boolean
 )
 
 object GlobalTasks {
@@ -21,6 +22,10 @@ object GlobalTasks {
   def suppressSideEffects = localTasks.get.suppressSideEffects
   def suppressSideEffects_=(v: Boolean) {
     localTasks.get.suppressSideEffects = v
+  }
+  def buildCalls = localTasks.get.buildCalls
+  def buildCalls_=(v: Int) {
+    localTasks.get.buildCalls = v
   }
   def inputFiles = localTasks.get.inputFiles
   def inputFiles_=(v: mutable.ListBuffer[File]) {
@@ -40,6 +45,7 @@ object GlobalTasks {
 class GlobalTasks {
   var suppressSideEffects: Boolean = false
 
+  var buildCalls = 0
   var inputFiles = new mutable.ListBuffer[File]()
   var outputFiles = new mutable.ListBuffer[File]()
   var dependencies = new mutable.ListBuffer[TaskDep]()
@@ -50,6 +56,7 @@ class GlobalTasks {
 trait FunTasks {
 
   def build[A](fn: => A) {
+    GlobalTasks.buildCalls += 1
     if (!GlobalTasks.suppressSideEffects) {
       fn
     }
@@ -128,11 +135,13 @@ trait FunTask[R] {
   def getDescr(args: List[String]): FunTaskDescr =
     GlobalTasks.descrCache.getOrElseUpdate((name, args), {
       val oldSuppress = GlobalTasks.suppressSideEffects
+      val oldBuildCalls = GlobalTasks.buildCalls
       val oldInputs = GlobalTasks.inputFiles
       val oldOutputs = GlobalTasks.outputFiles
       val oldDependencies = GlobalTasks.dependencies
       try {
         GlobalTasks.suppressSideEffects = true
+        GlobalTasks.buildCalls = 0
         GlobalTasks.inputFiles = new mutable.ListBuffer()
         GlobalTasks.outputFiles = new mutable.ListBuffer()
         GlobalTasks.dependencies = new mutable.ListBuffer()
@@ -143,10 +152,12 @@ trait FunTask[R] {
           inputs = GlobalTasks.inputFiles.toList.distinct,
           outputs = (GlobalTasks.outputFiles.toList ++ resultFiles).distinct,
           dependencies = GlobalTasks.dependencies.toList,
-          result = result
+          result = result,
+          isAggregate = GlobalTasks.buildCalls == 0
         )
       } finally {
         GlobalTasks.suppressSideEffects = oldSuppress
+        GlobalTasks.buildCalls = oldBuildCalls
         GlobalTasks.inputFiles = oldInputs
         GlobalTasks.outputFiles = oldOutputs
         GlobalTasks.dependencies = oldDependencies
@@ -168,7 +179,9 @@ trait FunTask[R] {
     },
     deps = getDependencies,
     body = applyArguments
-  )
+  ) {
+    override def isAggregate(args: List[String]) = getDescr(args).isAggregate
+  }
 
   def threads = underlying.threads
   def threads_=(t: Int) { underlying.threads = t }

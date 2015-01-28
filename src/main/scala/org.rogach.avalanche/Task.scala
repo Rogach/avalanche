@@ -10,4 +10,6 @@ case class Task(
    *  Has effect only if parallel execution is enabled.
    */
   var threads = 1
+
+  def isAggregate(args: List[String]) = body == BuildImports.NoBody
 }

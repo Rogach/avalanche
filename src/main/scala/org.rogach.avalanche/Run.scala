@@ -55,7 +55,7 @@ package run {
             .headOption
           }
         }.map { t =>
-          if (t.task.name == "-avalanche-root-task" || t.task.body == BuildImports.NoBody) {
+          if (t.task.name == "-avalanche-root-task" || t.isAggregate) {
             status(t) =
               if (tasks(t).exists(d => status(d) == Completed)) Completed
               else Cached

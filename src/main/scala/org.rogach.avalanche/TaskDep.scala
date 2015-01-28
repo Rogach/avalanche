@@ -34,13 +34,16 @@ case class TaskDep(task: Task, args: List[String]) {
     if (getReRun) throw new TaskNotCompleted(this)
 
     val endTime = System.currentTimeMillis
-    if (task.body != BuildImports.NoBody)
+    if (!task.isAggregate(args))
       if (Avalanche.opts.noTimings())
         success("Ended task '%s'" format this)
       else
         success("Ended task '%s', total time: %d s, completed on %s" format
                 (this, (endTime - startTime)/1000, now))
   }
+
+  def isAggregate = task.isAggregate(args)
+
   override def equals(that: Any) = that match {
     case TaskDep(`task`, `args`) => true
     case _ => false
