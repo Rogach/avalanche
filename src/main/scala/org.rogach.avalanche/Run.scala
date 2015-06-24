@@ -45,7 +45,7 @@ package run {
             (tasks(t).forall(d => status(d) == Completed || status(d) == Cached))
           }
           if (Avalanche.opts.parallel() == threads) {
-            pendingTasks.headOption
+            pendingTasks.toList.sortBy(_.task.threads).reverse.headOption
           } else if (threads > Avalanche.opts.parallel() / 2) {
             pendingTasks.find(t => t.task.threads <= threads)
           } else {
